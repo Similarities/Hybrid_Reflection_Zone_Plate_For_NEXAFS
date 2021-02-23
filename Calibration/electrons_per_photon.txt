@@ -1,0 +1,10 @@
+Greateyes GE 2048x2048 BI sensitivity: 0.8 counts/e
+[eV]	[number]
+10	3
+40	10
+100	27
+200	50
+400	100
+500	125
+1000 270
+
