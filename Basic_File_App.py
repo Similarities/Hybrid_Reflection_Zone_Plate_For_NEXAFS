@@ -8,3 +8,19 @@ def load_1d_array(file, column_1, skiprows):
 
 def stack_arrays(array_1, array_2, axis):
     return np.stack((array_1, array_2), axis=axis)
+
+
+def get_file_list(path_txt):
+    data_files = []
+    counter = 0
+    for file in os.listdir(path_txt):
+        print(file)
+        try:
+            if file.endswith(".txt" or ".csv"):
+                data_files.append(str(file))
+                counter = counter + 1
+            else:
+                print("only other files found")
+        except Exception as e:
+            raise e
+    return data_files
