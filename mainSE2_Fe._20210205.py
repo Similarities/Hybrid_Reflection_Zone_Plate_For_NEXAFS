@@ -102,9 +102,6 @@ class ImagePreProcessing:
         print('...saving:', self.filename[:-4] + description)
         plt.figure(7)
         plt.savefig(self.filename[:-4] + description + ".png", bbox_inches="tight", dpi=500)
-        self.figure_raw()
-        plt.figure(8)
-        plt.savefig(self.filename[:-4] + "raw" + ".png", bbox_inches = "tight", dpi= 500)
         np.savetxt(self.filename[:-4] + '_calibrated' + ".txt", result, delimiter=' ',
                    header='string', comments='',
                    fmt='%s')
