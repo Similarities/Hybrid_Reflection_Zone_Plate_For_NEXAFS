@@ -24,7 +24,6 @@ class AvgOnStack:
         for counter, value in enumerate(self.file_list):
             single_file_data = self.open_single_file(value)
             single_file_data = self.constant_scaling_on_array(single_file_data, self.scaling)
-
             self.avg[:] = self.avg[:] + single_file_data[:]
 
         self.avg[:]/len(self.file_list)
