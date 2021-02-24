@@ -9,6 +9,9 @@ def load_1d_array(file, column_1, skiprows):
 def stack_arrays(array_1, array_2, axis):
     return np.stack((array_1, array_2), axis=axis)
 
+def constant_array_scaling(array, constant):
+    return array[:] * constant
+
 
 def get_file_list(path_txt):
     data_files = []

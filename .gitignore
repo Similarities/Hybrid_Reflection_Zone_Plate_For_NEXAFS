@@ -1,0 +1,5 @@
+/_pychache_
+/.idea
+/data
+*.logs
+.env
