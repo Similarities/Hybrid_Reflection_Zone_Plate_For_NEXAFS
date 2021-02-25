@@ -1,3 +1,4 @@
+
 # Reflection Zone Plate evaluation
 
 RZP serve as novel high efficient and high resolving spectral dispersive device, in this case in reflection geometry. 
@@ -6,7 +7,6 @@ detection angle and position of RZP is keept constant. Because of this there mig
 structure on the RZP, reachable with a motorized RZP holder and enabling different spectral ranges.
 
 Two approaches for spectral calibration: :
--
 
 1. by fit via identifying lines in the image and name corresponding energy: "sprectral_calibration_xxx_fit.py"
 2. Via a geometrical (analytical function that is fed with some parameters of the RZP): "spectral_calibration_analytical.py"
@@ -35,4 +35,5 @@ RZP structure size. In order to test this for consistency:
 2. check deviations of the alignment with the "alignment structure " tool: the alignment structure is the same for every RZP structure and by this should deviate if the angle on the RZP has changed over the measurement
 3. (in progress:) statistical shot to shot deviation evaluation and averaging for provided stack of images (stability in counts and position)
 4. (in progress:) approximation for the number photons per sr @ 0.1 bandwidth from calibrated spectrum
+
 
