@@ -65,9 +65,9 @@ class ImagePreProcessing:
                         - (rzp_parameter[3] * math.pi / 180)))
         # new equation which i dont understand
         # self.x_axis_nm[counter] = rzp_parameter[2] * (math.cos(rzp_parameter[1] * math.pi / 180)
-        #                                              - math.cos(
-        #            math.atan(self.x_axis_nm[counter] / rzp_parameter[4])
-        #            - (math.acos(math.cos(rzp_parameter[1]*math.pi/180) - 2.331/rzp_parameter[2]))))
+        #                                    - math.cos(
+        #  math.atan(self.x_axis_nm[counter] / rzp_parameter[4])
+        #   - (math.acos(math.cos(rzp_parameter[1]*math.pi/180) - 2.331/rzp_parameter[2]))))
 
         return self.x_axis_nm
 
@@ -83,11 +83,11 @@ class ImagePreProcessing:
             plt.figure(6)
             plt.vlines(x, ymin=0, ymax=1E7)
 
-    def plot_calibration_ev(self, lines, ymax):
+    def plot_calibration_ev(self, lines, ymax, color):
         for x in lines:
             x = self.convert_single_value_nm_to_electron_volt(x)
             plt.figure(7)
-            plt.vlines(x, ymin=0, ymax=ymax, linewidth=0.5)
+            plt.vlines(x, ymin=0, ymax=ymax, linewidth=0.5, color=color)
 
     def plot_result_ev(self):
         self.convert_array_nm_to_eV()
@@ -149,18 +149,20 @@ class ImagePreProcessing:
         plt.colorbar()
 
 
-path_background = "StrayLight_W_4x945ms_5s"
+path_background = "data/strayLight_Fe_3x945ms_3.5s"
 name_background = path_background
-path_picture = "S2_W_1x945ms_2s"
+path_picture = "data/S1_Fe_3x945ms_3.5s/test"
 
 roi_list = ([0, 222, 2048, 1401])
 
-#emission_lines = Basic_File_App.load_1d_array("Fe_XPL_detected_20210202.txt", 1, 3)
+emission_lines = Basic_File_App.load_1d_array("Fe_XPL_detected_20210202.txt", 1, 3)
+no_emission = Basic_File_App.load_1d_array("no_line_emission_Fe.txt", 1, 3)
 
 # px size in um, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
-rzp_structure_parameter = np.array([13.5 * 1E-3, 2.13, 2074.26, 3.6521, 2575, -(1024-950)])
-per_second_correction = 1000 / 945
-rzp_structure_name = "RZPA9 -S2"
+rzp_structure_parameter = np.array([1.35000e-02, 2.13000e+00, 4150 , 3.6521e+00 ,  2.57500e+03,
+-1.4700e+02])
+per_second_correction = 1000 / (745)
+rzp_structure_name = "RZPA9 -S1"
 
 # create input pictures
 
@@ -185,12 +187,15 @@ def batch_folder_in_single_picture():
         Test.plot_x_axis_nm()
         # Test.plot_calibration(background[:, 0])
         Test.plot_result_ev()
-        #Test.plot_calibration_ev(emission_lines[:], 3.3E7)
+        Test.plot_calibration_ev(emission_lines[:], 3.3E7, "b")
+        #Test.plot_calibration_ev(no_emission[:], 3.3E7, "r")
         plotFilter.PlotFilter("Mylar_900nm.txt", "Mylar_filter", "eV", 7)
+        plotFilter.PlotFilter("Al_0.5um.txt", "Al_0.5_filter", "eV", 7)
+        plt.xlim(200,600)
+        plt.ylim(0, 0.5E7)
         Test.save_data(str(rzp_structure_parameter), rzp_structure_name)
 
 
 batch_folder_in_single_picture()
-plt.xlim(400,1000)
-plt.ylim(0, 2E6)
+
 plt.show()
