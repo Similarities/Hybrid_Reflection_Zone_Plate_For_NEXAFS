@@ -3,3 +3,6 @@
 /data
 *.logs
 .env
+*.png
+*.tiff
+/erko_new_equation_S2
