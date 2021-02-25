@@ -1,4 +1,4 @@
-import Basic_File_App
+import Basic_file_app
 import numpy as np
 import matplotlib as plt
 
@@ -12,13 +12,13 @@ class AvgOnStack:
         self.std = np.zeros([len(self.avg)])
 
     def create_file_list(self):
-        return Basic_File_App.get_file_list(self.path)
+        return Basic_file_app.get_file_list(self.path)
 
     def open_single_file(self, file_name):
-        return Basic_File_App.load_1d_array(self.path + '/' + file_name, 1, 2)
+        return Basic_file_app.load_1d_array(self.path + '/' + file_name, 1, 2)
 
     def size_of_input_data(self):
-        return len(Basic_File_App.load_1d_array(self.path + '/' + self.file_list[0], 1, 2))
+        return len(Basic_file_app.load_1d_array(self.path + '/' + self.file_list[0], 1, 2))
 
     def integrate_over_stack(self):
         for counter, value in enumerate(self.file_list):

@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import Basic_Image_App
-import Basic_File_App
+import Basic_image_app
+import Basic_file_app
 import math
-import plotFilter
+import Plot_filter
 
 
 # make sure the image-array (picture, background) is in 32bit
@@ -112,7 +112,7 @@ class ImagePreProcessing:
         print(np.amax(self.x_axis_nm), np.amin(self.x_axis_nm), 'spectral range in nm')
 
     def scale_array_per_second(self, constant):
-        self.binned_roi_y = Basic_File_App.constant_array_scaling(self.binned_roi_y, constant)
+        self.binned_roi_y = Basic_file_app.constant_array_scaling(self.binned_roi_y, constant)
         return self.binned_roi_y
 
     def prepare_header(self, description1, description2):
@@ -155,8 +155,8 @@ path_picture = "data/S1_Fe_3x945ms_3.5s/test"
 
 roi_list = ([0, 222, 2048, 1401])
 
-emission_lines = Basic_File_App.load_1d_array("Fe_XPL_detected_20210202.txt", 1, 3)
-no_emission = Basic_File_App.load_1d_array("no_line_emission_Fe.txt", 1, 3)
+emission_lines = Basic_file_app.load_1d_array("Fe_XPL_detected_20210202.txt", 1, 3)
+no_emission = Basic_file_app.load_1d_array("no_line_emission_Fe.txt", 1, 3)
 
 # px size in um, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
 rzp_structure_parameter = np.array([1.35000e-02, 2.13000e+00, 4150 , 3.6521e+00 ,  2.57500e+03,
@@ -166,16 +166,16 @@ rzp_structure_name = "RZPA9 -S1"
 
 # create input pictures
 
-file_list_background = Basic_Image_App.get_file_list(path_background)
-batch_background = Basic_Image_App.ImageStackMeanValue(file_list_background, path_background)
+file_list_background = Basic_image_app.get_file_list(path_background)
+batch_background = Basic_image_app.ImageStackMeanValue(file_list_background, path_background)
 my_background = batch_background.average_stack()
 
 
 def batch_folder_in_single_picture():
-    my_pictures = Basic_Image_App.get_file_list(path_picture)
+    my_pictures = Basic_image_app.get_file_list(path_picture)
     print(my_pictures)
     for x in my_pictures:
-        open_picture = Basic_Image_App.SingleImageOpen(x, path_picture)
+        open_picture = Basic_image_app.SingleImageOpen(x, path_picture)
         my_picture = open_picture.return_single_image()
         Test = ImagePreProcessing(my_picture, x, my_background, name_background[:-4], roi_list)
         # Test.view_control()
@@ -189,8 +189,8 @@ def batch_folder_in_single_picture():
         Test.plot_result_ev()
         Test.plot_calibration_ev(emission_lines[:], 3.3E7, "b")
         #Test.plot_calibration_ev(no_emission[:], 3.3E7, "r")
-        plotFilter.PlotFilter("Mylar_900nm.txt", "Mylar_filter", "eV", 7)
-        plotFilter.PlotFilter("Al_0.5um.txt", "Al_0.5_filter", "eV", 7)
+        Plot_filter.PlotFilter("Mylar_900nm.txt", "Mylar_filter", "eV", 7)
+        Plot_filter.PlotFilter("Al_0.5um.txt", "Al_0.5_filter", "eV", 7)
         plt.xlim(200,600)
         plt.ylim(0, 0.5E7)
         Test.save_data(str(rzp_structure_parameter), rzp_structure_name)

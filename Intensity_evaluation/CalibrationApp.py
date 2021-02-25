@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import Basic_File_App
+import Basic_file_app
 import Linear_Interpolation
 
 
@@ -14,9 +14,9 @@ class Prepare_Files_and_Interpolate:
 
     def prepare_file(self, skip_row):
         # ToDo: test if not empty, otherwise raise error
-        array_x = Basic_File_App.load_1d_array(self.file, 0, skip_row)
-        array_y = Basic_File_App.load_1d_array(self.file, 1, skip_row)
-        return Basic_File_App.stack_arrays(array_x, array_y, 1)
+        array_x = Basic_file_app.load_1d_array(self.file, 0, skip_row)
+        array_y = Basic_file_app.load_1d_array(self.file, 1, skip_row)
+        return Basic_file_app.stack_arrays(array_x, array_y, 1)
 
     def linear_interpolation(self):
         interpolation = Linear_Interpolation.LinearInterpolation(self.binsize, self.initial_array, self.file_name)
@@ -60,14 +60,14 @@ class CalibrateSingleValue:
         return self.photon_energy, self.counts
 
     def prepare_calibration_files(self, electron_calibration_file, quantum_efficiency_calibration_file):
-        calibration_energy = Basic_File_App.load_1d_array(electron_calibration_file, 0, 0)
-        calibration_electrons_per_photon_energy = Basic_File_App.load_1d_array(electron_calibration_file, 1, 0)
-        self.calibration_photon_number = Basic_File_App.stack_arrays(calibration_energy,  #
-                                                                calibration_electrons_per_photon_energy, axis=1)
+        calibration_energy = Basic_file_app.load_1d_array(electron_calibration_file, 0, 0)
+        calibration_electrons_per_photon_energy = Basic_file_app.load_1d_array(electron_calibration_file, 1, 0)
+        self.calibration_photon_number = Basic_file_app.stack_arrays(calibration_energy,  #
+                                                                     calibration_electrons_per_photon_energy, axis=1)
 
-        calibration_energy = Basic_File_App.load_1d_array(quantum_efficiency_calibration_file, 0, 0)
-        calibration_quantum = Basic_File_App.load_1d_array(quantum_efficiency_calibration_file, 1, 0)
-        self.quantum_efficiency = Basic_File_App.stack_arrays(calibration_energy, calibration_quantum, axis = 1)
+        calibration_energy = Basic_file_app.load_1d_array(quantum_efficiency_calibration_file, 0, 0)
+        calibration_quantum = Basic_file_app.load_1d_array(quantum_efficiency_calibration_file, 1, 0)
+        self.quantum_efficiency = Basic_file_app.stack_arrays(calibration_energy, calibration_quantum, axis = 1)
 
         return self.calibration_photon_number, self.quantum_efficiency
 

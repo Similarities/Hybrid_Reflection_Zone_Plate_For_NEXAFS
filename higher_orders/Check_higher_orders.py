@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import Basic_File_App
-import plotFilter
+import Basic_file_app
+import Plot_filter
 
 
 class ScaleAndOverlaySpectra:
@@ -15,11 +15,11 @@ class ScaleAndOverlaySpectra:
 
 
     def load_array(self, filename, path, scale_x, scale_y):
-        array_x = Basic_File_App.load_1d_array(path + '/' + filename, 0, 5 )
-        array_y = Basic_File_App.load_1d_array(path + '/'+ filename, 2,5)
-        array_x = Basic_File_App.constant_array_scaling(array_x, scale_x)
-        array_y = Basic_File_App.constant_array_scaling(array_y, scale_y)
-        return Basic_File_App.stack_arrays(array_x, array_y, 1)
+        array_x = Basic_file_app.load_1d_array(path + '/' + filename, 0, 5)
+        array_y = Basic_file_app.load_1d_array(path + '/' + filename, 2, 5)
+        array_x = Basic_file_app.constant_array_scaling(array_x, scale_x)
+        array_y = Basic_file_app.constant_array_scaling(array_y, scale_y)
+        return Basic_file_app.stack_arrays(array_x, array_y, 1)
 
     def load_original(self, filename, path):
         self.array_1 = self.load_array(filename, path, 1, 1)

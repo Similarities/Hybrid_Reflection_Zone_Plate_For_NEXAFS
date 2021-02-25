@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import Basic_File_App
+import Basic_file_app
 
 
 class PlotFilter:
@@ -13,9 +13,9 @@ class PlotFilter:
         self.plot_filter_data(1.2E6)
 
     def load_data(self):
-        x = Basic_File_App.load_1d_array(self.path + '/' + self.filename, 0, 2)
-        y = Basic_File_App.load_1d_array(self.path + '/' + self.filename, 1, 2)
-        return Basic_File_App.stack_arrays(x, y, 1)
+        x = Basic_file_app.load_1d_array(self.path + '/' + self.filename, 0, 2)
+        y = Basic_file_app.load_1d_array(self.path + '/' + self.filename, 1, 2)
+        return Basic_file_app.stack_arrays(x, y, 1)
 
     def convert_nm_to_electron_volt(self):
         if self.unit == "eV":
