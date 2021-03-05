@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import os
 
 
 def load_1d_array(file, column_1, skiprows):
@@ -27,3 +29,11 @@ def get_file_list(path_txt):
         except Exception as e:
             raise e
     return data_files
+
+def plot_range_of_array(array_x, array_y, x_min, x_max):
+    plt.plot(array_x, array_y)
+    plt.xlim(x_min, x_max)
+
+
+
+

@@ -1,3 +1,0 @@
-mylar edge nm
-
-mylar 	4.39

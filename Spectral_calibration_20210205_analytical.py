@@ -151,18 +151,16 @@ class ImagePreProcessing:
 
 path_background = "data/strayLight_Fe_3x945ms_3.5s"
 name_background = path_background
-path_picture = "data/S1_Fe_3x945ms_3.5s/test"
+path_picture = "data/S3_Fe_45ms/test"
 
 roi_list = ([0, 222, 2048, 1401])
 
 emission_lines = Basic_file_app.load_1d_array("Fe_XPL_detected_20210202.txt", 1, 3)
-no_emission = Basic_file_app.load_1d_array("no_line_emission_Fe.txt", 1, 3)
 
 # px size in um, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
-rzp_structure_parameter = np.array([1.35000e-02, 2.13000e+00, 4150 , 3.6521e+00 ,  2.57500e+03,
--1.4700e+02])
-per_second_correction = 1000 / (745)
-rzp_structure_name = "RZPA9 -S1"
+rzp_structure_parameter = np.array([1.3500e-02,  2.1300e+00,  1.3380e+03,  3.6521e+00,  2.5750e+03, -1.4700e+02])
+per_second_correction = 1000 / (45)
+rzp_structure_name = "RZPA9-S3_45ms"
 
 # create input pictures
 
@@ -191,7 +189,7 @@ def batch_folder_in_single_picture():
         #Test.plot_calibration_ev(no_emission[:], 3.3E7, "r")
         Plot_filter.PlotFilter("Mylar_900nm.txt", "Mylar_filter", "eV", 7)
         Plot_filter.PlotFilter("Al_0.5um.txt", "Al_0.5_filter", "eV", 7)
-        plt.xlim(200,600)
+        plt.xlim(650,1200)
         plt.ylim(0, 0.5E7)
         Test.save_data(str(rzp_structure_parameter), rzp_structure_name)
 

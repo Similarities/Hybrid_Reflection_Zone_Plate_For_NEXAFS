@@ -46,12 +46,12 @@ class ScaleAndOverlaySpectra:
 
     def add_single_array_to_plot(self):
         plt.figure(1)
-        plt.plot(self.array_any[:,0], self.array_any[:,1], label = self.name_higher_order )
+        plt.plot(self.array_any[:,0], self.array_any[:,1], label = self.name_higher_order, alpha = 0.5 )
         plt.legend()
 
     def plot_both(self):
         plt.figure(1)
-        plt.plot(self.array_1[:,0], self.array_1[:,1], label = self.name_original )
+        plt.plot(self.array_1[:,0], self.array_1[:,1], label = self.name_original, color = "black" )
         plt.plot(self.array_2[:,0], self.array_2[:,1], label = self.name_higher_order, alpha = 0.5)
         plt.xlabel("nm")
         plt.xlim(6, 3)
@@ -63,11 +63,11 @@ class ScaleAndOverlaySpectra:
 
 
 my_first = ScaleAndOverlaySpectra()
-my_first.load_original("210205_PM023351_calibrated_analytical.txt", "higher_order_FE/S1")
-my_first.load_second_order("210205_PM012930_calibrated_analytical.txt", "higher_order_FE/S3", 0.1)
+my_first.load_original("210205_PM023351_calibrated_analytical_3.59.txt", "higher_order_FE/S1")
+my_first.load_second_order("210205_PM012930_calibrated_analytical.txt", "higher_order_FE/S3", 0.3)
 my_first.plot_both()
-my_first.load_any_oder("210205_PM012930_calibrated_analytical.txt", "higher_order_FE/S3", 3, 0.2)
-my_first.load_any_oder("210205_PM012930_calibrated_analytical.txt", "higher_order_FE/S3", 4, 0.2)
+my_first.load_any_oder("210205_PM012930_calibrated_analytical.txt", "higher_order_FE/S3", 3, 0.3)
+my_first.load_any_oder("210205_PM012930_calibrated_analytical.txt", "higher_order_FE/S3", 4, 0.3)
 
 my_first.save_plot("S1", "S3")
 
