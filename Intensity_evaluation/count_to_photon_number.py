@@ -9,7 +9,8 @@ class CountsToPhotonNumber:
         self.sensitivity = 0.83 / 2.5  # counts per electron for low gain
         self.capture_angle = 4.72E-6  # sr for RZP A9
         self.calibration_photon_number, self.quantum_efficiency = \
-            self.prepare_calibration_files(calibration_electron_per_photon, calibration_q_a)
+            self.prepare_calibration_files( calibration_electron_per_photon, calibration_q_a)
+
 
         self.result = np.zeros([len(self.data)-1, 2])
         print(len(self.data), 'len data')
@@ -20,16 +21,18 @@ class CountsToPhotonNumber:
         return self.photon_energy, self.counts
 
     def prepare_calibration_files(self, electron_calibration_file, quantum_efficiency_calibration_file):
-        calibration_energy = Basic_file_app.load_1d_array(electron_calibration_file, 0, 0)
-        calibration_electrons_per_photon_energy = Basic_file_app.load_1d_array(electron_calibration_file, 1, 0)
-        self.calibration_photon_number = Basic_file_app.stack_arrays(calibration_energy,
-                                                                     calibration_electrons_per_photon_energy, axis=1)
-
         calibration_energy = Basic_file_app.load_1d_array(quantum_efficiency_calibration_file, 0, 0)
         calibration_quantum = Basic_file_app.load_1d_array(quantum_efficiency_calibration_file, 1, 0)
         self.quantum_efficiency = Basic_file_app.stack_arrays(calibration_energy, calibration_quantum, axis=1)
-
+        self.calibration_photon_number = Basic_file_app.load_1d_array(electron_calibration_file, 0,0)
         return self.calibration_photon_number, self.quantum_efficiency
+
+    def electrons_per_photon_energy(self, energy):
+        print(self.calibration_photon_number)
+        electrons_per_photon_energy = self.calibration_photon_number[1] + self.calibration_photon_number[0] * energy
+        print(electrons_per_photon_energy, energy, 'electon fit')
+        return  electrons_per_photon_energy
+
 
     def number_of_electrons(self, counts):
         return counts / self.sensitivity
@@ -41,12 +44,11 @@ class CountsToPhotonNumber:
         return counts_qe
 
     def number_of_photons(self, photon_energy, electron_number):
-        index = np.where(self.calibration_photon_number[::, 0] >= photon_energy)[0][0]
-        counts_cam = self.calibration_photon_number[index, 1]
+        number_of_photons = electron_number/(self.electrons_per_photon_energy(photon_energy))
         q_e = self.correct_quantum_efficiency_ccd(photon_energy)
         # print("calibration ccd for photon energy:", self.calibration_photon_number[index])
         # print("calibration ccd and qe:", counts_cam, q_e)
-        return electron_number / (counts_cam * q_e)
+        return number_of_photons / q_e
 
     def number_of_photons_per_sr(self, number_of_photons):
         return number_of_photons / self.capture_angle
@@ -100,13 +102,36 @@ class CountsToPhotonNumber:
         return self.result
 
 
-data_file = "data_intensity/210205_PM040653_calibrated_analytical.txt"
+    def prepare_header(self, description1, file_name):
+        # insert header line and change index
+        result = self.result
+        header_names = (['eV', 'Nphoton/s *sr @ 0.1%bw'])
+        names = (['file' + file_name, 'cal:' + "filter / ccd / qe see cal files"])
+        parameter_info = (
+            ['description:', description1])
+        return np.vstack((parameter_info, names, header_names, result))
+
+    def save_data(self, description1, file_name):
+
+        result = self.prepare_header(description1, file_name)
+        print('...saving:', file_name)
+        plt.figure(1)
+        plt.plot(self.result[:,0], self.result[:,1], label = file_name)
+        plt.xlabel('eV')
+        plt.ylabel('Nphoton/ s*sr @0.1% bw')
+        plt.savefig(file_name +'Nphoton'+ ".png", bbox_inches="tight", dpi=500)
+        np.savetxt(file_name + 'Nphoton' + ".txt", result, delimiter=' ',
+                   header='string', comments='',
+                   fmt='%s')
+
+
+data_file = "data_intensity/210205_PM012548_calibrated_analytical.txt"
 data = Basic_file_app.stack_arrays(Basic_file_app.load_1d_array(data_file, 1, 4),
                                    Basic_file_app.load_1d_array(data_file, 2, 4), axis=1)
 
-data_below_1000ev = data[0:1059]
+data_below_1000ev = data
 
-calibration_number_e_per_photon = "electrons_per_photon_interpolation_bin_size_0.01.txt"
+calibration_number_e_per_photon = "electrons_per_photon_poly_fit.txt"
 calibration_q_a = "QE_greateyesGE_BI_interpolation_bin_size_0.01.txt"
 
 al_filter_file = "Al_500nm_eV_interpolation_bin_size_0.05.txt"
@@ -118,11 +143,14 @@ mylar_filter = Basic_file_app.stack_arrays(Basic_file_app.load_1d_array(mylar_fi
                                         Basic_file_app.load_1d_array(mylar_filter_file,1,0), axis=1)
 
 Test = CountsToPhotonNumber(data_below_1000ev, calibration_number_e_per_photon, calibration_q_a)
+#Test.evalute_single_data_point(650)
 Test.evaluate_data()
 Test.correct_for_filter_transmission_array(al_filter)
-aha = Test.correct_for_filter_transmission_array(mylar_filter)
+Test.correct_for_filter_transmission_array(mylar_filter)
+Test.save_data("Fe", data_file[:-4])
 
-plt.plot(aha[:,0], aha[:,1])
+
+#plt.plot(aha[:,0], aha[:,1])
 plt.show()
 
 

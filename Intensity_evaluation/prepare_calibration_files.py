@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import Basic_file_app
 import linear_interpolation
+import Linear_fit
 
 class Prepare_Files_and_Interpolate:
     def __init__(self, original_file, binsize, file_name):
@@ -13,8 +14,8 @@ class Prepare_Files_and_Interpolate:
 
     def prepare_file(self, skip_row):
         # ToDo: test if not empty, otherwise raise error
-        array_x = Basic_file_app.load_1d_array(self.file, 0, skip_row)
-        array_y = Basic_file_app.load_1d_array(self.file, 1, skip_row)
+        array_x = Basic_file_app.load_1d_array(self.file, 1, skip_row)
+        array_y = Basic_file_app.load_1d_array(self.file, 0, skip_row)
         return Basic_file_app.stack_arrays(array_x, array_y, 1)
 
     def linear_interpolation(self):
@@ -22,6 +23,13 @@ class Prepare_Files_and_Interpolate:
         self.result = interpolation.interpolate_array()
         new_file_name = interpolation.save_result()
         return new_file_name
+
+    def fit_linear(self,  order):
+        my_fit = Linear_fit.CalibrationFit(self.initial_array, 1, self.file_name)
+        my_fit.fit_refernce_points()
+        my_fit.compare_fit()
+
+
 
     def convert_nm_to_electron_volt(self, unit):
         if unit:
@@ -52,22 +60,22 @@ class Prepare_Files_and_Interpolate:
 #my_quantum_efficiency = Test_files.linear_interpolation()
 #Test_files.plot_result()
 
-#number_of_electrons_per_photon = "electrons_per_photon.txt"
-#Test_files = Prepare_Files_and_Interpolate(number_of_electrons_per_photon, 0.01, number_of_electrons_per_photon[:-4])
-#number_of_electrons_per_photon = Test_files.linear_interpolation()
+number_of_electrons_per_photon = "electrons_per_photon.txt"
+Test_files = Prepare_Files_and_Interpolate(number_of_electrons_per_photon, 0.01, number_of_electrons_per_photon[:-4])
+number_of_electrons_per_photon = Test_files.fit_linear(2)
 #plt.figure(2)
 #Test_files.plot_result()
 
-my_al_filter =  "Al_500nm_eV.txt"
-Test_files = Prepare_Files_and_Interpolate(my_al_filter, 0.05, my_al_filter[:-4])
-al_filter = Test_files.linear_interpolation()
-plt.figure(1)
-Test_files.plot_result()
+#my_al_filter =  "Al_500nm_eV.txt"
+#Test_files = Prepare_Files_and_Interpolate(my_al_filter, 0.05, my_al_filter[:-4])
+#al_filter = Test_files.linear_interpolation()
+#lt.figure(1)
+#Test_files.plot_result()
 
-my_mylar_filter = "Mylar_900nm_eV.txt"
-Test_files = Prepare_Files_and_Interpolate(my_mylar_filter, 0.05, my_mylar_filter[:-4])
-mylar_filter = Test_files.linear_interpolation()
-plt.figure(1)
-Test_files.plot_result()
+#my_mylar_filter = "Mylar_900nm_eV.txt"
+#Test_files = Prepare_Files_and_Interpolate(my_mylar_filter, 0.05, my_mylar_filter[:-4])
+#mylar_filter = Test_files.linear_interpolation()
+#plt.figure(1)
+#Test_files.plot_result()
 
 plt.show()

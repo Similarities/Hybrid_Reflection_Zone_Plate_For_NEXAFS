@@ -121,7 +121,7 @@ class ImagePreProcessing:
 class CalibrationFit:
     def __init__(self, reference_points):
         self.reference_points = reference_points
-        # print(reference_points)
+        # print(reference_points_x_y)
         self.poly_coefficients = self.fit_reference_points()
         self.poly_reciproce = self.fit_reciproce()
         # print(self.poly_coefficients, 'coefficients')
