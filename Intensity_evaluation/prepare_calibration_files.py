@@ -9,7 +9,7 @@ class Prepare_Files_and_Interpolate:
         self.binsize = binsize
         self.initial_array = self.prepare_file(2)
         self.file_name = file_name
-        self.result = self.linear_interpolation()
+        self.result = np.empty([])
 
     def prepare_file(self, skip_row):
         # ToDo: test if not empty, otherwise raise error
@@ -23,6 +23,20 @@ class Prepare_Files_and_Interpolate:
         new_file_name = interpolation.save_result()
         return new_file_name
 
+    def convert_nm_to_electron_volt(self, unit):
+        if unit:
+            planck_constant = 4.135667516 * 1E-15
+            c = 299792458
+            self.initial_array[:, 0] = planck_constant * c / (self.initial_array[:, 0] * 1E-9)
+            plt.figure(2)
+            plt.plot(self.initial_array[:,0], self.initial_array[:,1])
+            plt.show()
+            print(self.initial_array[-1,0],self.initial_array[-2,0])
+            return self.initial_array
+
+        else:
+            None
+
     def plot_result(self):
         plt.plot(self.initial_array[::, 0], self.initial_array[::, 1], label=self.file_name + ' initial', color="b",
                  marker='.', ms=20)
@@ -33,15 +47,27 @@ class Prepare_Files_and_Interpolate:
 
 
 
-my_quantum_efficiency = "QE_greateyesGE_BI.txt"
-Test_files = Prepare_Files_and_Interpolate(my_quantum_efficiency, 0.01, my_quantum_efficiency[:-4])
-my_quantum_efficiency = Test_files.linear_interpolation()
+#my_quantum_efficiency = "QE_greateyesGE_BI.txt"
+#Test_files = Prepare_Files_and_Interpolate(my_quantum_efficiency, 0.01, my_quantum_efficiency[:-4])
+#my_quantum_efficiency = Test_files.linear_interpolation()
+#Test_files.plot_result()
+
+#number_of_electrons_per_photon = "electrons_per_photon.txt"
+#Test_files = Prepare_Files_and_Interpolate(number_of_electrons_per_photon, 0.01, number_of_electrons_per_photon[:-4])
+#number_of_electrons_per_photon = Test_files.linear_interpolation()
+#plt.figure(2)
+#Test_files.plot_result()
+
+my_al_filter =  "Al_500nm_eV.txt"
+Test_files = Prepare_Files_and_Interpolate(my_al_filter, 0.05, my_al_filter[:-4])
+al_filter = Test_files.linear_interpolation()
+plt.figure(1)
 Test_files.plot_result()
 
-number_of_electrons_per_photon = "electrons_per_photon.txt"
-Test_files = Prepare_Files_and_Interpolate(number_of_electrons_per_photon, 0.01, number_of_electrons_per_photon[:-4])
-number_of_electrons_per_photon = Test_files.linear_interpolation()
-plt.figure(2)
+my_mylar_filter = "Mylar_900nm_eV.txt"
+Test_files = Prepare_Files_and_Interpolate(my_mylar_filter, 0.05, my_mylar_filter[:-4])
+mylar_filter = Test_files.linear_interpolation()
+plt.figure(1)
 Test_files.plot_result()
 
 plt.show()

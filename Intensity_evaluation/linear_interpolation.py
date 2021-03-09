@@ -36,17 +36,17 @@ class LinearInterpolation:
         # ratio = int, increment = float (bin size that should be reached),
         # excerpt= element  to be started (lower limit), 2D
         filling = np.zeros([self.bin_number, 2])
-        x = self.upper_bin[0, ]
-        v = self.upper_bin[1, ]
+        x = self.upper_bin[0,]
+        v = self.upper_bin[1,]
         for i in range(0, self.bin_number):
             filling[i, 0] = x + i * self.resulting_bin_size
             filling[i, 1] = v + i * self.incremental_step
         return filling
 
     def interpolate_element(self, counter):
-        ratio = self.delta_x[0, ] / self.resulting_bin_size
+        ratio = self.delta_x[0,] / self.resulting_bin_size
         self.bin_number = int(round(ratio))
-        self.incremental_step = self.delta_x[1, ] / ratio
+        self.incremental_step = self.delta_x[1,] / ratio
         self.initial_array[counter + 1, 0] = (self.initial_array[counter, 0]
                                               + self.bin_number * self.resulting_bin_size)
         self.upper_bin = self.initial_array[counter]
@@ -58,11 +58,11 @@ class LinearInterpolation:
         counter_last_entry = -1
         self.last_entry[0, 0] = self.initial_array[counter_last_entry, 0]
         self.last_entry[0, 1] = self.initial_array[counter_last_entry, 1]
-        self.delta_x = self.last_entry[0, ] - self.temporal_array[counter_last_entry, ]
-        ratio = self.delta_x[0, ] / self.resulting_bin_size
+        self.delta_x = self.last_entry[0,] - self.temporal_array[counter_last_entry,]
+        ratio = self.delta_x[0,] / self.resulting_bin_size
         self.bin_number = int(round(ratio)) + 1
-        self.incremental_step = self.delta_x[1, ] / ratio
-        self.upper_bin = self.temporal_array[counter_last_entry, ]
+        self.incremental_step = self.delta_x[1,] / ratio
+        self.upper_bin = self.temporal_array[counter_last_entry,]
         self.sub_array = self.sub_arraying()
         self.temporal_array = np.concatenate((self.sub_array, self.temporal_array))
         self.temporal_array.view('i8,i8').sort(order=['f0'], axis=0)
@@ -74,11 +74,11 @@ class LinearInterpolation:
         self.round_accuracy()
 
         for counter, value in enumerate(self.initial_array[:-1, 0]):
-            self.delta_x = self.initial_array[counter + 1] - self.initial_array[counter]
-            if self.delta_x[0, ] > self.resulting_bin_size:
+            self.delta_x = self.initial_array[counter + 1,] - self.initial_array[counter,]
+            if self.delta_x[0,] > self.resulting_bin_size:
                 self.interpolate_element(counter)
 
-            elif self.delta_x > self.resulting_bin_size:
+            elif self.delta_x < self.resulting_bin_size:
                 print('!! wanted bin size > initial bin size !! ')
                 return None
 
