@@ -1,5 +1,6 @@
 /__pycache__
-/.idea
+/dist
+.idea/
 /data
 *.logs
 .env
@@ -7,4 +8,5 @@
 *.tiff
 /erko_new_equation_S2
 /data_intensity
+/data
 

@@ -4,6 +4,7 @@ import Basic_image_app
 import Basic_file_app
 import math
 import Plot_filter
+import os
 
 
 # make sure the image-array (picture, background) is in 32bit
@@ -15,7 +16,7 @@ class ImagePreProcessing:
         self.background = background
         self.background_name = background_name
         # x1, y1, x2, y2
-        self.back_roi = ([1245, 1674, 2048, 1902])
+        self.back_roi = ([1245, 1884, 2048, 1902])
         self.binned_roi_y = np.empty([])
         self.x_axis_eV = np.empty([])
         self.x_axis_nm = np.empty([])
@@ -63,12 +64,6 @@ class ImagePreProcessing:
                                                           - math.cos(
                         math.atan(self.x_axis_nm[counter] / rzp_parameter[4])
                         - (rzp_parameter[3] * math.pi / 180)))
-        # new equation which i dont understand
-        # self.x_axis_nm[counter] = rzp_parameter[2] * (math.cos(rzp_parameter[1] * math.pi / 180)
-        #                                    - math.cos(
-        #  math.atan(self.x_axis_nm[counter] / rzp_parameter[4])
-        #   - (math.acos(math.cos(rzp_parameter[1]*math.pi/180) - 2.331/rzp_parameter[2]))))
-
         return self.x_axis_nm
 
     def plot_x_axis_nm(self):
@@ -119,7 +114,7 @@ class ImagePreProcessing:
         # insert header line and change index
         result = np.column_stack((self.x_axis_nm, self.x_axis_eV, self.binned_roi_y))
         self.spectral_range()
-        header_names = (['nm', 'eV', 'counts'])
+        header_names = (['nm', 'eV', 'counts/s'])
         names = (['file' + str(self.filename), 'back:' + str(self.background_name), 'roi list:' + str(self.roi_list)])
         parameter_info = (
             ['description:', description1, description2])
@@ -131,7 +126,7 @@ class ImagePreProcessing:
         print('...saving:', self.filename[:-4])
         plt.figure(7)
         plt.savefig(self.filename[:-4] + ".png", bbox_inches="tight", dpi=500)
-        np.savetxt(self.filename[:-4] + '_calibrated_analytical' + ".txt", result, delimiter=' ',
+        np.savetxt( self.filename[:-4] + '_calibrated_analytical' + ".txt", result, delimiter=' ',
                    header='string', comments='',
                    fmt='%s')
 
@@ -149,18 +144,20 @@ class ImagePreProcessing:
         plt.colorbar()
 
 
-path_background = "data/strayLight_Fe_3x945ms_3.5s"
+path_background = "data/stray_light/945ms_straylight"
 name_background = path_background
-path_picture = "data/S3_Fe_45ms/test"
+path_picture = "data/A9_Lrot61/A9_Lrot61_445ms/LT_scan/"
+laser_gate_time_data = 445 #ms
 
-roi_list = ([0, 222, 2048, 1401])
+#roi on image ( [x1, y1, x2, y2])
+roi_list = ([0, 380, 1730, 1670])
 
 emission_lines = Basic_file_app.load_1d_array("Fe_XPL_detected_20210202.txt", 1, 3)
 
 # px size in um, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
-rzp_structure_parameter = np.array([1.3500e-02,  2.1300e+00,  1.3380e+03,  3.6521e+00,  2.5750e+03, -1.4700e+02])
-per_second_correction = 1000 / (45)
-rzp_structure_name = "RZPA9-S3_45ms"
+rzp_structure_parameter = np.array([1.3500e-02,  2.1300e+00,  1.3380e+03,  3.733e+00,  2.4790e+03, 0])
+per_second_correction = 1000 / (laser_gate_time_data)
+rzp_structure_name = "RZPA9-S3_" + str(laser_gate_time_data) +"ms"
 
 # create input pictures
 
@@ -187,10 +184,11 @@ def batch_folder_in_single_picture():
         Test.plot_result_ev()
         Test.plot_calibration_ev(emission_lines[:], 3.3E7, "b")
         #Test.plot_calibration_ev(no_emission[:], 3.3E7, "r")
+        #PlotFilter(file, path, unit, figure_number)
         Plot_filter.PlotFilter("Mylar_900nm.txt", "Mylar_filter", "eV", 7)
         Plot_filter.PlotFilter("Al_0.5um.txt", "Al_0.5_filter", "eV", 7)
         plt.xlim(650,1200)
-        plt.ylim(0, 0.5E7)
+        plt.ylim(0, 4.E7)
         Test.save_data(str(rzp_structure_parameter), rzp_structure_name)
 
 

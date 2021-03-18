@@ -149,17 +149,5 @@ Test.correct_for_filter_transmission_array(al_filter)
 Test.correct_for_filter_transmission_array(mylar_filter)
 Test.save_data("Fe", data_file[:-4])
 
-
-#plt.plot(aha[:,0], aha[:,1])
 plt.show()
 
-
-
-
-
-
-
-# ToDo: sort by initial energy (or by value) then: calc with sensitivity for value calibration value
-# ToDo: implement filter - do the same with filter
-# ToDo: implement capture angle / per s for measurement
-# ToDo: join it.
