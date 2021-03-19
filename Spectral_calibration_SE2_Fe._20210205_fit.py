@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import Basic_image_app
+import basic_image_app
 
 
 def load_2_d_array(file, column_1):
@@ -168,16 +168,16 @@ my_fit_coefficients = S3_FE_reference.give_fit()
 
 # create input pictures
 
-file_list_background = Basic_image_app.get_file_list(path_background)
-batch_background = Basic_image_app.ImageStackMeanValue(file_list_background, path_background)
+file_list_background = basic_image_app.get_file_list(path_background)
+batch_background = basic_image_app.ImageStackMeanValue(file_list_background, path_background)
 my_background = batch_background.average_stack()
 
 
 def batch_folder_in_single_picture():
-    my_pictures = Basic_image_app.get_file_list(path_picture)
+    my_pictures = basic_image_app.get_file_list(path_picture)
     print(my_pictures)
     for x in my_pictures:
-        open_picture = Basic_image_app.SingleImageOpen(x, path_picture)
+        open_picture = basic_image_app.SingleImageOpen(x, path_picture)
         my_picture = open_picture.return_single_image()
         Test = ImagePreProcessing(my_picture, x, my_background, name_background[:-4])
         # Test.view_control()

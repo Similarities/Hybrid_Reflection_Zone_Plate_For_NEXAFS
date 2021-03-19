@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import Basic_file_app
+import basic_file_app
 import linear_interpolation
 import Linear_fit
 
@@ -14,9 +14,9 @@ class Prepare_Files_and_Interpolate:
 
     def prepare_file(self, skip_row):
         # ToDo: test if not empty, otherwise raise error
-        array_x = Basic_file_app.load_1d_array(self.file, 1, skip_row)
-        array_y = Basic_file_app.load_1d_array(self.file, 0, skip_row)
-        return Basic_file_app.stack_arrays(array_x, array_y, 1)
+        array_x = basic_file_app.load_1d_array(self.file, 1, skip_row)
+        array_y = basic_file_app.load_1d_array(self.file, 0, skip_row)
+        return basic_file_app.stack_arrays(array_x, array_y, 1)
 
     def linear_interpolation(self):
         interpolation = linear_interpolation.LinearInterpolation(self.binsize, self.initial_array, self.file_name)
