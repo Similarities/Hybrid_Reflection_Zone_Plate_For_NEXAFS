@@ -9,3 +9,6 @@
 /erko_new_equation_S2
 /data_intensity
 /data
+/.pytest_cache
+/.idea
+*.idea
