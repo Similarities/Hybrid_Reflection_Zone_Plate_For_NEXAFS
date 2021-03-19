@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import Basic_image_app
-import Basic_file_app
+import basic_image_app
+import basic_file_app
 import math
 import Plot_filter
 
@@ -14,8 +14,8 @@ class CompareAlignmentStructure:
 
 
     def load_image(self, path_file):
-        array = Basic_image_app.read_image(path_file)
-        array = Basic_image_app.convert_32_bit(array)
+        array = basic_image_app.read_image(path_file)
+        array = basic_image_app.convert_32_bit(array)
         return array, path_file[0:3]
 
     def extract_roi(self, roi_list):
@@ -41,7 +41,7 @@ class CompareAlignmentStructure:
         plt.legend()
 
     def scale_counts(self, scaling):
-        self.line_out = Basic_file_app.constant_array_scaling(self.line_out, scaling)
+        self.line_out = basic_file_app.constant_array_scaling(self.line_out, scaling)
         return self.line_out
 
 

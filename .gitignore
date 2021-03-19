@@ -1,5 +1,4 @@
 __pycache__/
-/dist
 .idea/
 /data
 *.logs
@@ -10,6 +9,6 @@ __pycache__/
 /data_intensity
 /data
 /.pytest_cache
-*.idea
+/.idea
 
 

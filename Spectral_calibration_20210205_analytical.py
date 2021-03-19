@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import Basic_image_app
-import Basic_file_app
+import basic_image_app
+import basic_file_app
 import math
 import Plot_filter
 import os
@@ -107,7 +107,7 @@ class ImagePreProcessing:
         print(np.amax(self.x_axis_nm), np.amin(self.x_axis_nm), 'spectral range in nm')
 
     def scale_array_per_second(self, constant):
-        self.binned_roi_y = Basic_file_app.constant_array_scaling(self.binned_roi_y, constant)
+        self.binned_roi_y = basic_file_app.constant_array_scaling(self.binned_roi_y, constant)
         return self.binned_roi_y
 
     def prepare_header(self, description1, description2):
@@ -152,7 +152,7 @@ laser_gate_time_data = 445 #ms
 #roi on image ( [x1, y1, x2, y2])
 roi_list = ([0, 380, 1730, 1670])
 
-emission_lines = Basic_file_app.load_1d_array("Fe_XPL_detected_20210202.txt", 1, 3)
+emission_lines = basic_file_app.load_1d_array("calibration_files/Fe_XPL_detected_20210202.txt", 1, 3)
 
 # px size in um, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
 rzp_structure_parameter = np.array([1.3500e-02,  2.1300e+00,  1.3380e+03,  3.733e+00,  2.4790e+03, 0])
@@ -161,16 +161,16 @@ rzp_structure_name = "RZPA9-S3_" + str(laser_gate_time_data) +"ms"
 
 # create input pictures
 
-file_list_background = Basic_image_app.get_file_list(path_background)
-batch_background = Basic_image_app.ImageStackMeanValue(file_list_background, path_background)
+file_list_background = basic_image_app.get_file_list(path_background)
+batch_background = bimage_app.ImageStackMeanValue(file_list_background, path_background)
 my_background = batch_background.average_stack()
 
 
 def batch_folder_in_single_picture():
-    my_pictures = Basic_image_app.get_file_list(path_picture)
+    my_pictures = basic_image_app.get_file_list(path_picture)
     print(my_pictures)
     for x in my_pictures:
-        open_picture = Basic_image_app.SingleImageOpen(x, path_picture)
+        open_picture = basic_image_app.SingleImageOpen(x, path_picture)
         my_picture = open_picture.return_single_image()
         Test = ImagePreProcessing(my_picture, x, my_background, name_background[:-4], roi_list)
         # Test.view_control()
