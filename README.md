@@ -17,11 +17,11 @@ Spectral calibration comes with the following tools:
 - background subtraction (image calculation), adjusted to a compared roi between background image and measurement image
 - extract roi on image 
 - integration to get line-out
-- spectral calibration according to method
+- spectral calibration according to method (analytical with input parameter)
 - conversion nm to eV
 - integrate calibration lines (if provided) in plots
 - save function (result array,  plots)
-- (in analytic calibration): correction via constant scaling (e.g. to convert measurent time to per second)
+- intensity constant scaling (e.g. to convert measurent time to per second)
 - batch process over folder images
 - plot filter data on result image
 
@@ -34,5 +34,24 @@ RZP structure size. In order to test this for consistency:
     With this we can as well identify higher orders (if the data from different sprectral ranges is provided)
 2. check deviations of the alignment with the "alignment structure " tool: the alignment structure is the same for every RZP structure and by this should deviate if the angle on the RZP has changed over the measurement
 3. (in progress:) statistical shot to shot deviation evaluation and averaging for provided stack of images (stability in counts and position)
-4. (in progress:) approximation for the number photons per sr @ 0.1 bandwidth from calibrated spectrum
+4. "counter_to_photon_number "approximation for the number photons per s and sr @ 0.1 bandwidth from calibrated spectrum for provided calibration files
+5. linear interpolation of calibration files (sub sampling)
+
+Spectral resolution:
+- 
+- FWHM with linear interpolation of selected spectral ranges. This is needed, as usually the input data of a recorded spectral 
+line consists on too little data points. 
+- batch compatible for different spectral lines and over stack of input data
+- uses scypi package
+
+Packages used: 
+- 
+- numpy
+- matplotlib
+- scipy.interpolate
+- math
+- python 3.7 / 3.8
+
+
+
 
