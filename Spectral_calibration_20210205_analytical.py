@@ -3,7 +3,7 @@ import numpy as np
 import basic_image_app
 import basic_file_app
 import math
-import Plot_filter
+import plot_filter
 import os
 
 
@@ -126,7 +126,7 @@ class ImagePreProcessing:
         print('...saving:', self.filename[:-4])
         plt.figure(7)
         plt.savefig(self.filename[:-4] + ".png", bbox_inches="tight", dpi=500)
-        np.savetxt( self.filename[:-4] + '_calibrated_analytical' + ".txt", result, delimiter=' ',
+        np.savetxt(self.filename[:-4] + '_calibrated_analytical' + ".txt", result, delimiter=' ',
                    header='string', comments='',
                    fmt='%s')
 
@@ -144,27 +144,29 @@ class ImagePreProcessing:
         plt.colorbar()
 
 
-path_background = "data/stray_light/945ms_straylight"
+path_background = "data/StrayLight_W_4x945ms_5s/"
 name_background = path_background
-path_picture = "data/A9_Lrot61/A9_Lrot61_445ms/LT_scan/"
-laser_gate_time_data = 445 #ms
+path_picture = "data/S1_W_4x945ms_5s/test/"
+laser_gate_time_data = 45  # ms
 
-#roi on image ( [x1, y1, x2, y2])
-roi_list = ([0, 380, 1730, 1670])
+# roi on image ( [x1, y1, x2, y2])
+roi_list = ([0, 222, 2048, 1401])
 
 emission_lines = basic_file_app.load_1d_array("calibration_files/Fe_XPL_detected_20210202.txt", 1, 3)
 
 # px size in um, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
-rzp_structure_parameter = np.array([1.3500e-02,  2.1300e+00,  1.3380e+03,  3.733e+00,  2.4790e+03, 0])
-per_second_correction = 1000 / (laser_gate_time_data)
-rzp_structure_name = "RZPA9-S3_" + str(laser_gate_time_data) +"ms"
+rzp_structure_parameter = np.array([1.350e-02,  2.130e+00 , 4.150e+03,  3.659e+00 , 2.575e+03, -1.470e+02])
+laser_gate_time_data = 4 * 945  # ms
+per_second_correction = 1000 / laser_gate_time_data
+rzp_structure_name = "RZPA9-S1_" + str(laser_gate_time_data) + "ms"
 
 # create input pictures
 
 file_list_background = basic_image_app.get_file_list(path_background)
-batch_background = bimage_app.ImageStackMeanValue(file_list_background, path_background)
+batch_background = basic_image_app.ImageStackMeanValue(file_list_background, path_background)
 my_background = batch_background.average_stack()
 
+my_y_limit = .3E7
 
 def batch_folder_in_single_picture():
     my_pictures = basic_image_app.get_file_list(path_picture)
@@ -182,13 +184,15 @@ def batch_folder_in_single_picture():
         Test.plot_x_axis_nm()
         # Test.plot_calibration(background[:, 0])
         Test.plot_result_ev()
-        Test.plot_calibration_ev(emission_lines[:], 3.3E7, "b")
-        #Test.plot_calibration_ev(no_emission[:], 3.3E7, "r")
-        #PlotFilter(file, path, unit, figure_number)
-        Plot_filter.PlotFilter("Mylar_900nm.txt", "Mylar_filter", "eV", 7)
-        Plot_filter.PlotFilter("Al_0.5um.txt", "Al_0.5_filter", "eV", 7)
-        plt.xlim(650,1200)
-        plt.ylim(0, 4.E7)
+        Test.plot_calibration_ev(emission_lines[:], my_y_limit, "b")
+        my_filter_1 = plot_filter.PlotFilter("Mylar_900nm.txt", "filter/Mylar_filter", "eV", 7)
+        my_filter_1.convert_nm_to_electron_volt()
+        my_filter_1.plot_filter_data(my_y_limit)
+        my_filter_2 = plot_filter.PlotFilter("Al_0.5um.txt", "filter/Al_0.5_filter", "eV", 7)
+        my_filter_2.convert_nm_to_electron_volt()
+        my_filter_2.plot_filter_data(my_y_limit)
+        plt.xlim(150, 450)
+        plt.ylim(0, my_y_limit)
         Test.save_data(str(rzp_structure_parameter), rzp_structure_name)
 
 

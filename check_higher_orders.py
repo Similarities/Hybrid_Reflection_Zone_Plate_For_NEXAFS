@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import basic_file_app
-import Plot_filter
+import plot_filter
+
 
 
 class ScaleAndOverlaySpectra:
@@ -23,14 +24,15 @@ class ScaleAndOverlaySpectra:
 
     def load_original(self, filename, path):
         self.array_1 = self.load_array(filename, path, 1, 1)
-        self.name_original = str(path[-2:]) + "original"
+        self.name_original = str(path) + " original"
+        print(self.name_original)
         return self.array_1, self.name_original
 
 
     def load_second_order(self, filename, path, scale_y):
         self.array_2 = self.load_array(filename, path, 2, scale_y)
         self.counter_order = 2
-        self.name_higher_order = str(path) + 'order:' +str(self.counter_order)
+        self.name_higher_order = str(path) + ' order:' +str(self.counter_order)
         return self.array_2, self.name_higher_order
 
     def load_any_oder(self, filename, path, order, scale_y):
@@ -61,15 +63,28 @@ class ScaleAndOverlaySpectra:
         plt.figure(1)
         plt.savefig(description1 + '_' + description2 + ".png", bbox_inches="tight", dpi=500)
 
+path = "higher_orders/higher_order_FE/S2_W_per_s/S2_W_1x945ms_2s0020_calibrated_analytical.txt"
+path_filter_1 = "filter/Al_0.5_filter/"
+filter_1 = "Al_0.5um.txt"
+path_filter_2 = "filter/Mylar_filter/"
+filter_2 = "Mylar_900nm.txt"
 
 my_first = ScaleAndOverlaySpectra()
-my_first.load_original("210205_PM023351_calibrated_analytical_3.59.txt", "higher_order_FE/S1")
-my_first.load_second_order("210205_PM012930_calibrated_analytical.txt", "higher_order_FE/S3", 0.3)
+my_first.load_original("210205_PM043550_calibrated_analytical.txt", "higher_orders/higher_order_FE/S1_W_per_s")
+my_first.load_second_order("S2_W_1x945ms_2s0020_calibrated_analytical.txt", "higher_orders/higher_order_FE/S2_W_per_s", 0.25)
 my_first.plot_both()
-my_first.load_any_oder("210205_PM012930_calibrated_analytical.txt", "higher_order_FE/S3", 3, 0.3)
-my_first.load_any_oder("210205_PM012930_calibrated_analytical.txt", "higher_order_FE/S3", 4, 0.3)
+#my_first.load_any_oder("S2_W_1x945ms_2s0020_calibrated_analytical.txt", "higher_order_FE/S2_W_per_s", 3, 0.3)
+#my_first.load_any_oder("S2_W_1x945ms_2s0020_calibrated_analytical.txt", "higher_order_FE/S2_W_per_s", 4, 0.3)
 
-my_first.save_plot("S1", "S3")
+
+my_filter = plot_filter.PlotFilter(filter_1, path_filter_1, "nm", 1)
+my_filter.plot_filter_data(0.41E7)
+my_filter = plot_filter.PlotFilter(filter_2, path_filter_2, "nm", 1)
+my_filter.plot_filter_data(0.051E7)
+plt.ylim(0,0.1E7)
+
+
+my_first.save_plot("S1", "S2_W")
 
 
 

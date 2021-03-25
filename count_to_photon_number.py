@@ -125,22 +125,24 @@ class CountsToPhotonNumber:
                    fmt='%s')
 
 
-data_file = "data_intensity/A9_Lrot66105ms_LG1260_LT17750/210315_PM040157_calibrated_analytical.txt"
-data = basic_file_app.stack_arrays(basic_file_app.load_1d_array(data_file, 1, 4),
-                                   basic_file_app.load_1d_array(data_file, 2, 4), axis=1)
+data_file = "Intensity_evaluation/data_intensity/S1_W_per_s/210205_PM043550_calibrated_analytical.txt"
+data = basic_file_app.stack_arrays(basic_file_app.load_1d_array(data_file, 1, 5),
+                                   basic_file_app.load_1d_array(data_file, 2, 5), axis=1)
 
 data_below_1000ev = data
 
-calibration_number_e_per_photon = "electrons_per_photon_poly_fit.txt"
-calibration_q_a = "QE_greateyesGE_BI_interpolation_bin_size_0.01.txt"
+calibration_number_e_per_photon = "Intensity_evaluation/electrons_per_photon_poly_fit.txt"
+calibration_q_a = "Intensity_evaluation/QE_greateyesGE_BI_interpolation_bin_size_0.01.txt"
 
-al_filter_file = "Al_500nm_eV_interpolation_bin_size_0.05.txt"
+al_filter_file = "Intensity_evaluation/Al_500nm_eV_interpolation_bin_size_0.05.txt"
 al_filter = basic_file_app.stack_arrays(basic_file_app.load_1d_array(al_filter_file, 0, 0),
                                         basic_file_app.load_1d_array(al_filter_file,1,0), axis=1)
 
-mylar_filter_file = "Mylar_900nm_eV_interpolation_bin_size_0.05.txt"
-mylar_filter = basic_file_app.stack_arrays(Basic_file_app.load_1d_array(mylar_filter_file, 0, 0),
+mylar_filter_file = "Intensity_evaluation/Mylar_900nm_eV_interpolation_bin_size_0.05.txt"
+mylar_filter = basic_file_app.stack_arrays(basic_file_app.load_1d_array(mylar_filter_file, 0, 0),
                                         basic_file_app.load_1d_array(mylar_filter_file,1,0), axis=1)
+
+
 
 Test = CountsToPhotonNumber(data_below_1000ev, calibration_number_e_per_photon, calibration_q_a)
 #Test.evalute_single_data_point(650)

@@ -1,14 +1,17 @@
 __pycache__/
 .idea/
 /data
+/erko_new_equation_S2
+/data_intensity
+/.pytest_cache
+/.idea
+/higher_orders
+/alignment_structure
+*/__pycache__
+/__pycache__
 *.logs
 .env
 *.png
 *.tiff
-/erko_new_equation_S2
-/data_intensity
-/data
-/.pytest_cache
-/.idea
 
 
