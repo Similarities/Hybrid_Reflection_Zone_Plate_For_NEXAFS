@@ -5,8 +5,9 @@ __pycache__/
 /data_intensity
 /.pytest_cache
 /.idea
-/higher_orders
+
 /alignment_structure
+/higher_orders_FE
 */__pycache__
 /__pycache__
 *.logs
