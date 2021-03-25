@@ -1,6 +1,7 @@
 import numpy as np
 import basic_file_app
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
 
 class FWHM:
@@ -11,8 +12,10 @@ class FWHM:
         self.spectrum = self.open_file()
         self.energy_list = energy_list
         self.result = np.empty([1, 5])
-        self.range_for_selection = 0.009
+        self.range_for_selection = 0.006
         self.all_results = np.zeros([1, 5])
+        self.offset_const = 200000
+        print(self.offset_const, 'base line offset')
 
     def open_file(self):
         spectral = basic_file_app.load_1d_array(self.path + '/' + self.file, 0, 4)
@@ -26,6 +29,11 @@ class FWHM:
         plt.ylabel("counts/s")
         plt.legend()
 
+    def offset(self):
+        plt.figure(4)
+        plt.plot(self.spectrum[:100,0], self.spectrum[:100,1])
+        return np.mean(self.spectrum[:20,1])
+
     def find_max(self, array):
         return np.amax(array[:, 1])
 
@@ -35,6 +43,24 @@ class FWHM:
         index_R = np.where(self.spectrum[:, 0] <= selection_energy - self.range_for_selection)[0][0]
         print(index_L, index_R, "index selected energy: ", selection_energy, )
         return self.spectrum[index_L:index_R, :]
+
+
+    def substracte_baseline(self):
+        self.spectrum[:,1] = self.spectrum[:,1] - self.offset_const
+        return self.spectrum
+
+    def interpolate_spectral_selection(self, selected_energy):
+        subarray = self.spectral_selection(selected_energy)
+        #linear interpolation
+        f = interp1d(subarray[:,0],subarray[:,1])
+        xnew = np.linspace(subarray[0,0], subarray[-1,0], num=150, endpoint= True)
+        plt.figure(2)
+        plt.plot(subarray[:,0],subarray[:,1], '.', xnew, f(xnew), '-')
+        plt.xlim(1.22,1.2)
+        plt.ylim(0,1.1E7)
+        return np.stack((xnew, f(xnew)), axis = 1)
+
+
 
     def find_FWHM(self, array, max_counts):
         zero_line = 0
@@ -46,34 +72,31 @@ class FWHM:
         indexR_lower = np.where(array[indexL_upper:, 1] - half_max <= 0)[0][0] + indexL_upper
         indexL_lower = d - 1
         indexR_upper = indexR_lower + 1
-        print(indexR_lower, indexR_upper, indexL_lower, indexL_upper,
-              "indexR_lower, indexR_upper, indexL_lower, indexL_upper")
-        print(array[indexR_lower, 1] / max_counts, array[indexR_upper, 1] / max_counts,
-              array[indexL_lower, 1] / max_counts, array[indexL_upper, 1] / max_counts, "correspoding counts/maxcounts")
-        print(max_counts, "max counts")
-        plt.figure(3)
-        plt.plot(array[:, 0], array[:, 1], marker=".")
+        plt.figure(2)
+        plt.scatter(array[:, 0], array[:, 1], marker=".", s=3, alpha = 0.5)
         plt.hlines(y=array[indexL_lower, 1], xmin=array[0, 0], xmax=array[-1, 0], color="g")
         plt.hlines(y=array[indexL_upper, 1], xmin=array[0, 0], xmax=array[-1, 0], color="r")
         FWHM = array[indexL_lower, 0] - array[indexR_lower, 0]
         FWHM_upper = array[indexL_upper, 0] - array[indexR_upper, 0]
         return FWHM, FWHM_upper
 
-    def determine_full_width_half_max(self, selection_energy):
+
+    def full_width_half_max_interpolated(self, selection_energy):
         self.result[0, 0] = selection_energy
-        sub_array = self.spectral_selection(selection_energy)
+        sub_array = self.interpolate_spectral_selection(selection_energy)
         self.result[0, 1] = self.find_max(sub_array)
         fwhm_low, fwhm_up = self.find_FWHM(sub_array, self.result[0, 1])
         self.result[0, 2] = fwhm_low
         self.result[0, 3] = fwhm_up
         avg = (fwhm_low + fwhm_up) / 2
+        print(fwhm_up, fwhm_low, 0.5*(fwhm_up+fwhm_low), "fwhm up, fwhm low, fwhm avg")
         self.result[0, 4] = selection_energy / avg
 
         return self.result
 
     def batch_over_energy_list(self):
         for x in self.energy_list:
-            self.all_results = np.concatenate((self.all_results, self.determine_full_width_half_max(x)), axis=0)
+            self.all_results = np.concatenate((self.all_results, self.full_width_half_max_interpolated(x)), axis=0)
 
         self.all_results = self.all_results[1:, :]
         plt.figure(1)
@@ -89,10 +112,10 @@ class FWHM:
         header_names = (
         ['lambda nm', 'max_counts/s', 'delta lambda FWHM low', 'delta_lambda FWHM up', "lambda/delta_lambda(avg)"])
         names = (
-        ['file:' + str(self.file_name), '##########', '########', 'taken fwhm from existing points not fitted ',
+        ['file:' + str(self.file_name), '##########', '########', 'taken fwhm from existing points linear interpolated ',
          '......'])
         parameter_info = (
-            ['description:', "FWHM determination", "no fit just max_counts/2",
+            ['description:', "FWHM determination", "max_counts/2",
              "taken at for next point over and under the half-max counts", 'xxxxx'])
         return np.vstack((parameter_info, names, header_names, self.all_results))
 
@@ -104,10 +127,10 @@ class FWHM:
                    fmt='%s')
 
 
-path = "data/"
+path = "data/A9_Lrot31_105ms_LT19250LG_1300LT19250/"
+fiel = "210315_PM050521_calibrated_analytical.txt"
 
-lambda_list = (1.50, 1.526, 1.226, 1.21, 1.419, 1.675, 1.7, 1.38)
-
+lambda_list = (1.50, 1.526, 1.226, 1.21, 1.419, 1.675, 1.705, 1.38)
 
 
 file_list = basic_file_app.get_file_list(path)
@@ -115,10 +138,10 @@ file_list = basic_file_app.get_file_list(path)
 for x in file_list:
 
     Test = FWHM(x, path, lambda_list)
-    Test.plot_fulls_spectra()
+    Test.substracte_baseline()
     Test.batch_over_energy_list()
     Test.save_data()
 
 plt.figure(1)
-plt.savefig("FWHM_210205_PM012548_calibrated_analytical" + ".png", bbox_inches="tight", dpi=500)
+plt.savefig("FWHM_20210315_Lrot31_105ms_LT19250LG_1300LT19250" + ".png", bbox_inches="tight", dpi=500)
 plt.show()

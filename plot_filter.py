@@ -9,8 +9,7 @@ class PlotFilter:
         self.unit = unit
         self.figure_number = figure_number
         self.filter_data = self.load_data()
-        self.convert_nm_to_electron_volt()
-        self.plot_filter_data(1.2E6)
+
 
     def load_data(self):
         x = basic_file_app.load_1d_array(self.path + '/' + self.filename, 0, 2)

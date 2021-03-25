@@ -2,8 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import basic_image_app
 import basic_file_app
-import math
-import Plot_filter
+
 
 
 class CompareAlignmentStructure:
@@ -47,13 +46,13 @@ class CompareAlignmentStructure:
 
 
 
-file_1 = "S1/210205_PM023034.tif"
+file_1 = "alignment_structure/S1/210205_PM023034.tif"
 roi_1 = np.array([0, 2052, 135, 160])
 
-file_2 = "S2/210205_PM021419.tif"
+file_2 = "alignment_structure/S2/210205_PM021419.tif"
 roi_2 = np.array([0, 2052, 130, 200])
 
-file_3 = "S3/210205_PM012548.tif"
+file_3 = "alignment_structure/S3/210205_PM012548.tif"
 roi_3 =  np.array([0, 2052, 140, 170])
 
 S3_structure = CompareAlignmentStructure(file_3)
