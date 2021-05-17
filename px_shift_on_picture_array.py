@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# reference point list: method evaluates minimum in +/- range, the px-position (in x) of minimum is needed
 
 class PixelShift:
     def __init__(self, array_reference, reference_point_list):
@@ -18,11 +19,12 @@ class PixelShift:
 
     def evaluate_shift_for_input_array(self, picture_array):
         self.array_in = picture_array
-        self.test_plot(self.array_in, 1)
+        self.test_plot(self.array_in, 1, "original")
         minimum_position = self.minimum_analysis(self.array_in)
         shift = self.shift_to_reference(minimum_position)
         corrected_array = self.correct_for_shift(shift, picture_array)
-        self.test_plot(corrected_array, 2)
+        self.test_plot(corrected_array, 2, "px-shifted")
+
 
         return corrected_array
 
@@ -48,8 +50,9 @@ class PixelShift:
         shift_1 = np.where(array[:, 1] == minimum)[0][0]
         return shift_1
 
-    def test_plot(self, array, figure_number):
+    def test_plot(self, array, figure_number, name):
         plt.figure(figure_number)
-        plt.plot(array[:, 0], array[:, 1])
+        plt.plot(array[:, 0], array[:, 1], label = name)
         plt.ylim(0, np.amax(array[:,1]))
         plt.xlim(self.reference_points[0] -30, self.reference_points[0] + 100)
+        plt.legend()

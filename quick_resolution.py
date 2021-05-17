@@ -5,22 +5,15 @@ from scipy.interpolate import interp1d
 
 
 class FWHM:
-    def __init__(self, file, path, energy_list):
-        self.file = file
-        self.path = path
-        self.file_name = self.file[:-4]
-        self.spectrum = self.open_file()
+    def __init__(self, array, file_name, energy_list):
+        self.file_name = file_name[:-4]
+        self.spectrum = array
         self.energy_list = energy_list
         self.result = np.empty([1, 5])
         self.range_for_selection = 0.006
         self.all_results = np.zeros([1, 5])
-        self.offset_const = 200000
+        self.offset_const = 10000
         print(self.offset_const, 'base line offset')
-
-    def open_file(self):
-        spectral = basic_file_app.load_1d_array(self.path + '/' + self.file, 0, 4)
-        counts = basic_file_app.load_1d_array(self.path + '/' + self.file, 2, 4)
-        return basic_file_app.stack_arrays(spectral, counts, 1)
 
     def plot_fulls_spectra(self):
         plt.figure(3)
@@ -127,21 +120,53 @@ class FWHM:
                    fmt='%s')
 
 
-path = "data/A9_Lrot66/LG_scan_LT17150_105ms/LG_scan/"
+path = "data/A9_Lrot56_105ms_Gonio1460/LT18350/px_shifted_cal/px_cal/"
 
 
 lambda_list = (1.50, 1.526, 1.226, 1.21, 1.419, 1.675, 1.705, 1.38)
 
 
 file_list = basic_file_app.get_file_list(path)
+avg_over_stack = basic_file_app.StackMeanValue(file_list, path, 0, 2, 4)
+avg_array = avg_over_stack.get_result()
 
+def open_file(file_name, path):
+    spectral = basic_file_app.load_1d_array(path + '/' + file_name, 0, 4)
+    counts = basic_file_app.load_1d_array(path + '/' + file_name, 2, 4)
+    return basic_file_app.stack_arrays(spectral, counts, 1)
+
+
+plt.figure(11)
+plt.plot(avg_array[:,0], avg_array[:,1], label = "A9_Lrot56_105ms_Gonio1460LT18350_avg")
+plt.legend()
 for x in file_list:
 
-    Test = FWHM(x, path, lambda_list)
-    Test.substracte_baseline()
-    Test.batch_over_energy_list()
-    Test.save_data()
+    file = open_file(x, path)
+    plt.figure(10)
+    plt.plot(file[:,0], file[:,1])
+    plt.xlim(1.4, 1.5)
+
+
+testing = FWHM(avg_array, "A9_Lrot56_105ms_Gonio1460LT18350_avg_wo____", lambda_list)
+testing.substracte_baseline()
+testing.batch_over_energy_list()
+testing.save_data()
+
+
+
+#batch
+#for x in file_list:
+ #   array = open_file(path, x)
+  #  name = x[:-4]
+   # Test = FWHM(array, name, lambda_list)
+    #Test.substracte_baseline()
+    #Test.batch_over_energy_list()
+    #Test.save_data()
+
+
+
 
 plt.figure(1)
-plt.savefig("FWHM_20210315_A9_LG_scan_LT17150_105ms_Lrot66" + ".png", bbox_inches="tight", dpi=500)
+plt.savefig("FWHM_A9_Lrot56_105ms_Gonio1460LT18350_px_shifted" + ".png", bbox_inches="tight", dpi=500)
 plt.show()
+
