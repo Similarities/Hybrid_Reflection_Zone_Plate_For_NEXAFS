@@ -110,7 +110,7 @@ class FWHM:
     def prepare_header(self):
         # insert header line and change index
         header_names = (
-        ['lambda nm', 'max_counts/s', 'delta lambda FWHM low', 'delta_lambda FWHM up', "lambda/delta_lambda(avg)"])
+        ['nm', 'max_counts/s', 'delta lambda FWHM low', 'delta_lambda FWHM up', "lambda/delta_lambda(avg)"])
         names = (
         ['file:' + str(self.file_name), '##########', '########', 'taken fwhm from existing points linear interpolated ',
          '......'])
@@ -127,8 +127,8 @@ class FWHM:
                    fmt='%s')
 
 
-path = "data/A9_Lrot31_105ms_LT19250LG_1300LT19250/"
-fiel = "210315_PM050521_calibrated_analytical.txt"
+path = "data/A9_Lrot66/LG_scan_LT17150_105ms/LG_scan/"
+
 
 lambda_list = (1.50, 1.526, 1.226, 1.21, 1.419, 1.675, 1.705, 1.38)
 
@@ -143,5 +143,5 @@ for x in file_list:
     Test.save_data()
 
 plt.figure(1)
-plt.savefig("FWHM_20210315_Lrot31_105ms_LT19250LG_1300LT19250" + ".png", bbox_inches="tight", dpi=500)
+plt.savefig("FWHM_20210315_A9_LG_scan_LT17150_105ms_Lrot66" + ".png", bbox_inches="tight", dpi=500)
 plt.show()

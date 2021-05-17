@@ -144,21 +144,21 @@ class ImagePreProcessing:
         plt.colorbar()
 
 
-path_background = "data/StrayLight_W_4x945ms_5s/"
+path_background = "data/stray_light/945ms_straylight/"
 name_background = path_background
-path_picture = "data/S1_W_4x945ms_5s/test/"
-laser_gate_time_data = 45  # ms
+path_picture = "data/A9_Lrot56_105ms_Gonio1460/LT18350/"
+
 
 # roi on image ( [x1, y1, x2, y2])
-roi_list = ([0, 222, 2048, 1401])
+roi_list = ([0, 380, 1730, 1670])
 
 emission_lines = basic_file_app.load_1d_array("calibration_files/Fe_XPL_detected_20210202.txt", 1, 3)
 
 # px size in um, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
-rzp_structure_parameter = np.array([1.350e-02,  2.130e+00 , 4.150e+03,  3.659e+00 , 2.575e+03, -1.470e+02])
-laser_gate_time_data = 4 * 945  # ms
+rzp_structure_parameter = np.array([1.350e-02,  2.130e+00 , 1.338e+03,  3.714e+00, 2.479e+03, 0.000e+00])
+laser_gate_time_data = 105  # ms
 per_second_correction = 1000 / laser_gate_time_data
-rzp_structure_name = "RZPA9-S1_" + str(laser_gate_time_data) + "ms"
+rzp_structure_name = "RZPA9-S3_" + str(laser_gate_time_data) + "ms"
 
 # create input pictures
 
@@ -166,7 +166,7 @@ file_list_background = basic_image_app.get_file_list(path_background)
 batch_background = basic_image_app.ImageStackMeanValue(file_list_background, path_background)
 my_background = batch_background.average_stack()
 
-my_y_limit = .3E7
+my_y_limit = 3.3E7
 
 def batch_folder_in_single_picture():
     my_pictures = basic_image_app.get_file_list(path_picture)
@@ -191,7 +191,7 @@ def batch_folder_in_single_picture():
         my_filter_2 = plot_filter.PlotFilter("Al_0.5um.txt", "filter/Al_0.5_filter", "eV", 7)
         my_filter_2.convert_nm_to_electron_volt()
         my_filter_2.plot_filter_data(my_y_limit)
-        plt.xlim(150, 450)
+        plt.xlim(600,1200)
         plt.ylim(0, my_y_limit)
         Test.save_data(str(rzp_structure_parameter), rzp_structure_name)
 

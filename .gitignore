@@ -14,5 +14,7 @@ __pycache__/
 .env
 *.png
 *.tiff
+*.tif
+*.xml
 
 
