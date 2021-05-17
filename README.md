@@ -16,12 +16,14 @@ Spectral calibration comes with the following tools:
 - stray light correction (for provided stray light/ background  images), mean value over roi
 - background subtraction (image calculation), adjusted to a compared roi between background image and measurement image
 - extract roi on image 
+
 - integration to get line-out
+- intensity constant scaling (e.g. to convert measurent time to per second)
+- px-shift correction using find minimum in specified range
 - spectral calibration according to method (analytical with input parameter)
 - conversion nm to eV
-- integrate calibration lines (if provided) in plots
+- integration of calibration lines (if provided) in plots
 - save function (result array,  plots)
-- intensity constant scaling (e.g. to convert measurent time to per second)
 - batch process over folder images
 - plot filter data on result image
 
