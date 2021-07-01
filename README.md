@@ -12,20 +12,22 @@ Two approaches for spectral calibration: :
 2. Via a geometrical (analytical function that is fed with some parameters of the RZP): "spectral_calibration_analytical.py"
 
 Spectral calibration comes with the following tools:
-- 
+
 - stray light correction (for provided stray light/ background  images), mean value over roi
 - background subtraction (image calculation), adjusted to a compared roi between background image and measurement image
 - extract roi on image 
+- hot pixel removal (low pass function)
 
-- integration to get line-out
+- integration to get line-out over defined ROI
 - intensity constant scaling (e.g. to convert measurent time to per second)
-- px-shift correction using find minimum in specified range
+- px-shift correction using find minimum in specified range (pointing correction)
 - spectral calibration according to method (analytical with input parameter)
 - conversion nm to eV
 - integration of calibration lines (if provided) in plots
 - save function (result array,  plots)
 - batch process over folder images
 - plot filter data on result image
+- statistics on processed files
 
 Helping tools for interpreting the quality of the calibration :
 -
@@ -53,6 +55,7 @@ Packages used:
 - scipy.interpolate
 - math
 - python 3.7 / 3.8
+- os
 
 
 
