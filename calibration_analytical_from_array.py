@@ -2,14 +2,16 @@ import basic_file_app
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import os
 
 
 class CalibrateArray:
-    def __init__(self, calibration_parameter):
+    def __init__(self, calibration_parameter, directory):
         self._binned_roi_y = []
         self.filename = str()
         self.x_axis_nm = []
         self.calibration_parameter = calibration_parameter
+        self.directory = directory
         print("input:")
         print("pixel size in mm: ", self.calibration_parameter[0])
         print("alpha in degree: ", self.calibration_parameter[1])
@@ -100,7 +102,9 @@ class CalibrateArray:
         result = self.prepare_header(description1, description2)
         print('...saving:', self.filename[:-4])
         plt.figure(7)
-        plt.savefig(self.filename[:-4] + ".png", bbox_inches="tight", dpi=500)
-        np.savetxt(self.filename[:-4] + '_pxshifted_cal' + ".txt", result, delimiter=' ',
+        save_name = os.path.join(self.directory, self.filename[:-4] + ".txt")
+        save_pic = os.path.join(self.directory, self.filename[:-4] +"_pxshifted_cal"+ ".png")
+        plt.savefig(save_pic, bbox_inches="tight", dpi=500)
+        np.savetxt(save_name, result, delimiter=' ',
                    header='string', comments='',
                    fmt='%s')

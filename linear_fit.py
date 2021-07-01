@@ -34,3 +34,7 @@ class CalibrationFit:
         plt.scatter(self.reference_points[:, 1], self.reference_points[:, 0])
         plt.plot(x_axis, fit_y)
         plt.plot()
+
+
+reference_points =
+My_fit = CalibrationFit()

@@ -12,13 +12,13 @@ import os
 # make sure the image-array (picture, background) is in 32bit
 class ImagePreProcessing:
 
-    def __init__(self, picture, picture_name, background, background_name, roi_list):
+    def __init__(self, picture, picture_name, background, background_name, roi_list, back_roi):
         self.filename = picture_name
         self.picture = picture
         self.background = background
         self.background_name = background_name
         # x1, y1, x2, y2
-        self.back_roi = ([1245, 1884, 2048, 1902])
+        self.back_roi = back_roi
         self.binned_roi_y = np.empty([])
         self.x_axis_eV = np.empty([])
         self.x_axis_nm = np.empty([])
@@ -54,12 +54,13 @@ class ImagePreProcessing:
         self.binned_roi_y = basic_file_app.constant_array_scaling(self.binned_roi_y, constant)
         return self.binned_roi_y
 
-    def save_sum_of_y(self):
+    def save_sum_of_y(self, new_dir):
         result = np.stack((self.x_axis_nm, self.binned_roi_y), axis=1)
-
-        np.savetxt(self.filename[:-4] + '_binned_y' + ".txt", result, delimiter=' ',
+        save_name = os.path.join(new_dir, self.filename[:-9] + '_binned_y' + ".txt")
+        np.savetxt(save_name , result, delimiter=' ',
                    header='string', comments='',
                    fmt='%s')
+
 
     def view_control(self):
         plt.figure(1)
@@ -76,54 +77,69 @@ class ImagePreProcessing:
 
 
 class PxCorrectionOnStack:
-    def __init__(self, path, reference_point_list):
+    def __init__(self, path, reference_point_list, new_dir):
         self.path = path
         self.file_list = basic_image_app.get_file_list(path_picture)
         self.reference_points = reference_point_list
-        self.pre_process_stack()
+        self.new_dir = new_dir
+
+
+    #addon (in pre-processing)
+    def threshold_cleaner(self, picture, threshold):
+        picture[picture > threshold] = 0
+        #plt.imshow(picture)
+        #plt.show()
+        return picture
 
     def pre_process_stack(self):
         for x in self.file_list:
             open_picture = basic_image_app.SingleImageOpen(x, path_picture)
             my_picture = open_picture.return_single_image()
-            PreProcess = ImagePreProcessing(my_picture, x, my_background, name_background[:-4], roi_list)
+            my_picture = self.threshold_cleaner(my_picture, 37000)
+            PreProcess = ImagePreProcessing(my_picture, x, my_background, name_background[:-4], roi_list, back_roi)
             # Test.view_control()
             PreProcess.reference_scaling()
             PreProcess.background_subtraction()
             PreProcess.bin_in_y()
             PreProcess.scale_array_per_second(per_second_correction)
-            PreProcess.save_sum_of_y()
+            PreProcess.save_sum_of_y(self.new_dir)
         print("xxxxxxxxx - all px shifted xxxxxxxxxxxx")
 
-    def px_shift(self, path):
-        self.file_list = basic_file_app.get_file_list(path)
+    def px_shift(self):
+        self.file_list = basic_file_app.get_file_list(self.new_dir)
         print(len(self.file_list))
-        reference = basic_file_app.load_2d_array(self.file_list[0], 0, 1, 1)
-        print("new file list", self.file_list)
+        reference = basic_file_app.load_2d_array(self.new_dir + '/' +self.file_list[0], 0, 1, 1)
+        #print("new file list", self.file_list)
         for x in self.file_list[1:]:
-            image_array = basic_file_app.load_2d_array(x, 0, 1, 1)
+            image_array = basic_file_app.load_2d_array(self.new_dir + '/' +x, 0, 1, 1)
             ShiftIt = px_shift_on_picture_array.PixelShift(reference, self.reference_points)
             corrected_array = ShiftIt.evaluate_shift_for_input_array(image_array)
             self.overwrite_original(x, corrected_array)
 
     def overwrite_original(self, file_name, array):
         print("overwriting original file..: ", file_name)
-        np.savetxt(file_name[:-4] + ".txt", array, delimiter=' ',
+        save_name = os.path.join(self.new_dir, file_name[:-4] + ".txt")
+        np.savetxt(save_name, array, delimiter=' ',
                    header='string', comments='',
                    fmt='%s')
 
 
 class BatchCalibration:
-    def __init__(self, calibration_file_path, file_path):
+    def __init__(self, calibration_file_path, file_path, directory):
         self.calibration_parameter = basic_file_app.load_1d_array(calibration_file_path, 0, 0)
         print(self.calibration_parameter, 'used calibration_files')
         self.file_path = file_path
+        self.directory = directory
+
+
 
     def calibrate_array(self):
         self.file_list = basic_file_app.get_file_list(self.file_path)
-        my_calibration = calibration_analytical_from_array.CalibrateArray(self.calibration_parameter)
+        my_calibration = calibration_analytical_from_array.CalibrateArray(self.calibration_parameter, self.directory)
+
         for x in self.file_list:
             my_array = basic_file_app.load_2d_array(self.file_path + x, 0, 1, 2)
+            my_array[:,1] = -np.log(my_array[:,1]) +15
             my_calibration.set_input_array(my_array, x)
             my_calibration.main()
             my_calibration.save_data("back: " + path_background + "RZP-structure:___" + rzp_structure_name, roi_list)
@@ -131,39 +147,61 @@ class BatchCalibration:
 
 
 
-path_background = "data/stray_light/945ms_straylight/"
+
+
+path_background = "data/straylight_5000ms_pos2/"
 name_background = path_background
-path_picture = "data/A9_Lrot56_105ms_Gonio1460/LT18350/raw/"
+path_picture = "data/5000ms_pos2/"
 
+
+#DEFINE ROI for EVAL and BACKGROUND
 # roi on image ( [x1, y1, x2, y2])
-roi_list = ([0, 380, 1730, 1670])
+roi_list = ([0, 216, 1520, 1542])
+back_roi = ([1720, 330, 2040, 1900])
 
-emission_lines = basic_file_app.load_1d_array("calibration_files/Fe_XPL_detected_20210202.txt", 1, 3)
+#RESULT-PATH - important for processing
+bin_path =  "results_binned_5000ms_pos2"
+#os.mkdir(bin_path)
+cal_path = "results_cal_5000ms_pos2"
+#os.mkdir(cal_path)
 
 # px size in um, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
 # is now given via read in txt - should look like this:
 #rzp_structure_parameter = np.array([1.350e-02, 2.130e+00, 1.338e+03, 3.714e+00, 2.479e+03, 0.000e+00])
 
-laser_gate_time_data = 105  # ms
+# SCALING PARAMETER FOR counts + HEADER DESCRIPTION
+laser_gate_time_data = 5000 # ms
 per_second_correction = 1000 / laser_gate_time_data
-rzp_structure_name = "RZPA9-S3_" + str(laser_gate_time_data) + "ms"
+rzp_structure_name = "RZPA9-S2_" + str(laser_gate_time_data) + "ms"
 
-# create input pictures
-
+# BACKGROUND MEAN FROM IMAGE STACK
 file_list_background = basic_image_app.get_file_list(path_background)
 batch_background = basic_image_app.ImageStackMeanValue(file_list_background, path_background)
 my_background = batch_background.average_stack()
-my_y_limit = 3.3E7
+
+
+#BIN AND PX-SHIFT CORRECTION:
 
 # reference positions (px) for minimum in roi for px shift evaluation
-reference_point_list = [949, 987]
+reference_point_list = [392]
 # path_binned_array_files to be opened for px-shifted arrays (usually excecution path for this python routine)
-# Test = PxCorrectionOnStack(path_picture, reference_point_list)
-# Test.px_shift(path_binned_array_files)
+Test = PxCorrectionOnStack(path_picture, reference_point_list,bin_path)
+Test.pre_process_stack()
+Test.px_shift()
 
-binned_file_path = "data/A9_Lrot56_105ms_Gonio1460/LT18350/px_shifted_cal/binned/"
-calibration_path = "data/A9_Lrot56_105ms_Gonio1460/LT18350/A9_Lrot56_105ms_Gonio1460_LT18350_cal.txt"
-calibration = BatchCalibration(calibration_path, binned_file_path)
+
+
+
+
+# CALIBRATION ON BINNED SPECTRA
+calibration_path = "calibration_files/S2_20210628_pos2.txt"
+calibration = BatchCalibration(calibration_path, bin_path + "/", cal_path)
 calibration.calibrate_array()
 
+mylar_positions = ([541.8, 538.2, 535.4, 532.9])
+
+for x in mylar_positions:
+    plt.vlines(x=x, ymin=-20, ymax=160, color = "m")
+plt.xlim(520, 550)
+plt.ylim(-1,1.5)
 plt.show()

@@ -5,6 +5,7 @@ __pycache__/
 /data_intensity
 /.pytest_cache
 /.idea
+/results
 
 /alignment_structure
 /higher_orders_FE
