@@ -67,9 +67,11 @@ class StackMeanValue:
         self.file_path = file_path
         self.skip_rows = skip_rows
         self.col_y = col_y
+        self.col_x = col_x
         self.result = np.zeros([self.length_input_array(), 2])
-        self.result[:, 0] = load_1d_array(self.file_path + '/' + self.file_list[0], col_x, self.skip_rows)
         self.average_stack()
+
+
 
     def length_input_array(self):
         return len(load_1d_array(self.file_path + '/' + self.file_list[0], 0, self.skip_rows))
@@ -81,8 +83,9 @@ class StackMeanValue:
             self.result[:, 1] = self.result[:, 1] + single_array
 
         self.result[:, 1] = self.result[:, 1] / (len(self.file_list))
-
         return self.result
 
     def get_result(self):
+        self.result[:, 0] = load_1d_array(self.file_path + '/' + self.file_list[0], self.col_x, self.skip_rows)
+        print(self.result)
         return self.result

@@ -1,4 +1,4 @@
-__pycache__/
+.__pycache__/
 .idea/
 /data
 /erko_new_equation_S2
@@ -7,15 +7,17 @@ __pycache__/
 /.idea
 /results
 
+
 /alignment_structure
 /higher_orders_FE
-*/__pycache__
+
 /__pycache__
 *.logs
-.env
+*.env
 *.png
 *.tiff
 *.tif
 *.xml
+*.pyc
 
 
