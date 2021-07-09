@@ -38,7 +38,7 @@ class ImagePreProcessing:
     def background_subtraction(self):
         for counter, x in enumerate(self.picture[0, ::]):
             self.picture[::, counter] = self.picture[::, counter] - self.background[::, counter]
-        self.picture[self.picture < 0] = 0
+        self.picture[self.picture < 0] = 1
         return self.picture
 
     def bin_in_y(self):
@@ -84,6 +84,7 @@ class PxCorrectionOnStack:
         self.new_dir = new_dir
 
 
+
     #addon (in pre-processing)
     def threshold_cleaner(self, picture, threshold):
         picture[picture > threshold] = 0
@@ -95,7 +96,7 @@ class PxCorrectionOnStack:
         for x in self.file_list:
             open_picture = basic_image_app.SingleImageOpen(x, path_picture)
             my_picture = open_picture.return_single_image()
-            my_picture = self.threshold_cleaner(my_picture, 37000)
+            my_picture = self.threshold_cleaner(my_picture, 3000)
             PreProcess = ImagePreProcessing(my_picture, x, my_background, name_background[:-4], roi_list, back_roi)
             # Test.view_control()
             PreProcess.reference_scaling()
@@ -139,69 +140,95 @@ class BatchCalibration:
 
         for x in self.file_list:
             my_array = basic_file_app.load_2d_array(self.file_path + x, 0, 1, 2)
-            my_array[:,1] = -np.log(my_array[:,1]) +15
             my_calibration.set_input_array(my_array, x)
             my_calibration.main()
             my_calibration.save_data("back: " + path_background + "RZP-structure:___" + rzp_structure_name, roi_list)
 
+    def avg_of_stack(self):
+        self.file_list= basic_file_app.get_file_list(self.directory)
+        my_avg = basic_file_app.StackMeanValue(self.file_list, self.directory,1, 2, 4)
+        my_result = my_avg.get_result()
+        plt.figure(10)
+        plt.plot(my_result[:,0],-np.log(my_result[:,1])+16, label = "my_avg")
+        return my_result
 
 
 
 
 
-path_background = "data/straylight_5000ms_pos2/"
+
+def create_result_directory(name):
+    if os.path.isdir(name):
+        pass
+    else: os.mkdir(name)
+
+
+
+
+path_background = "data/straylight_50ms/"
 name_background = path_background
-path_picture = "data/5000ms_pos2/"
+path_picture = "data/LT3250_50ms/"
 
 
 #DEFINE ROI for EVAL and BACKGROUND
 # roi on image ( [x1, y1, x2, y2])
-roi_list = ([0, 216, 1520, 1542])
-back_roi = ([1720, 330, 2040, 1900])
+roi_list = ([0, 303, 1437, 1632])
+back_roi = ([1683, 0, 2048, 2000])
 
 #RESULT-PATH - important for processing
-bin_path =  "results_binned_5000ms_pos2"
-#os.mkdir(bin_path)
-cal_path = "results_cal_5000ms_pos2"
-#os.mkdir(cal_path)
+
+create_result_directory("results_binned_"+str("LT3250_50ms"))
+bin_path =  "results_binned_"+str("LT3250_50ms")
+
+
+
 
 # px size in um, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
 # is now given via read in txt - should look like this:
 #rzp_structure_parameter = np.array([1.350e-02, 2.130e+00, 1.338e+03, 3.714e+00, 2.479e+03, 0.000e+00])
 
 # SCALING PARAMETER FOR counts + HEADER DESCRIPTION
-laser_gate_time_data = 5000 # ms
+laser_gate_time_data = 50# ms
 per_second_correction = 1000 / laser_gate_time_data
-rzp_structure_name = "RZPA9-S2_" + str(laser_gate_time_data) + "ms"
+rzp_structure_name = "RZPA9-S3_" + str(laser_gate_time_data) + "ms"
+
+
 
 # BACKGROUND MEAN FROM IMAGE STACK
-file_list_background = basic_image_app.get_file_list(path_background)
-batch_background = basic_image_app.ImageStackMeanValue(file_list_background, path_background)
-my_background = batch_background.average_stack()
+#file_list_background = basic_image_app.get_file_list(path_background)
+#batch_background = basic_image_app.ImageStackMeanValue(file_list_background, path_background)
+#my_background = batch_background.average_stack()
+
 
 
 #BIN AND PX-SHIFT CORRECTION:
 
 # reference positions (px) for minimum in roi for px shift evaluation
-reference_point_list = [392]
+reference_point_list = [615]
 # path_binned_array_files to be opened for px-shifted arrays (usually excecution path for this python routine)
-Test = PxCorrectionOnStack(path_picture, reference_point_list,bin_path)
-Test.pre_process_stack()
-Test.px_shift()
+#Test = PxCorrectionOnStack(path_picture, reference_point_list,bin_path)
+#Test.pre_process_stack()
+#Test.px_shift()
 
 
 
 
 
 # CALIBRATION ON BINNED SPECTRA
-calibration_path = "calibration_files/S2_20210628_pos2.txt"
+
+calibration_path = "calibration_files/20210707_calibration_RZP.txt"
+cal_path = str("cal_")+ bin_path[14:]
+create_result_directory(cal_path)
 calibration = BatchCalibration(calibration_path, bin_path + "/", cal_path)
 calibration.calibrate_array()
+my_avg = calibration.avg_of_stack()
 
-mylar_positions = ([541.8, 538.2, 535.4, 532.9])
+
+mylar_positions = basic_file_app.load_1d_array("calibration_files/NiO_L2_L3.txt", 0,0)
 
 for x in mylar_positions:
+    plt.figure(10)
     plt.vlines(x=x, ymin=-20, ymax=160, color = "m")
-plt.xlim(520, 550)
-plt.ylim(-1,1.5)
+plt.xlim(840, 890)
+plt.ylim(2,4)
 plt.show()

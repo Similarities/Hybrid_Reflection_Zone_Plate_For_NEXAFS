@@ -1,10 +1,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import imageio
+
+
 
 
 def read_image(file):
     return plt.imread(file)
+
+def read_32bit_tiff(file):
+    return imageio.imread(file)
 
 
 def get_file_list(path_picture):
@@ -27,18 +33,18 @@ def convert_32_bit(picture):
     return np.float32(picture)
 
 
+
 class ImageStackMeanValue:
 
     def __init__(self, file_list, file_path):
         self.file_list = file_list
         self.file_path = file_path
-        self.result = np.zeros([2052, 2048])
+        self.result = np.empty([])
 
     def average_stack(self):
         for x in self.file_list:
             x = str(self.file_path + '/' + x)
-            picture_x = read_image(x)
-            picture_x = convert_32_bit(picture_x)
+            picture_x = read_32bit_tiff(x)
             self.result = self.result + picture_x
 
         self.result = self.result / (len(self.file_list))
@@ -49,10 +55,21 @@ class SingleImageOpen:
     def __init__(self, file_name, file_path):
         self.file_name = file_name
         self.file_path = file_path
+        self.picture_array = np.empty([])
+
+
 
     def return_single_image(self):
-        picture = read_image(str(self.file_path + '/' + self.file_name))
-        return convert_32_bit(picture)
+        self.picture_array = read_32bit_tiff(str(self.file_path + '/' + self.file_name))
+        return self.picture_array
 
 
 
+
+
+
+
+
+testimage = SingleImageOpen("202100707_NiOLTm3150_50ms00090.tiff", "data/test_raw/")
+#plt.imshow(testimage)
+#plt.show()
