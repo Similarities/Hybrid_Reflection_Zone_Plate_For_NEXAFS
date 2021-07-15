@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import imageio
+import cv2
+
 
 
 
@@ -11,6 +13,10 @@ def read_image(file):
 
 def read_32bit_tiff(file):
     return imageio.imread(file)
+
+def read_cv2_tiff(file):
+    img = cv2.imread(file)
+
 
 
 def get_file_list(path_picture):
@@ -70,6 +76,5 @@ class SingleImageOpen:
 
 
 
-testimage = SingleImageOpen("202100707_NiOLTm3150_50ms00090.tiff", "data/test_raw/")
 #plt.imshow(testimage)
 #plt.show()
