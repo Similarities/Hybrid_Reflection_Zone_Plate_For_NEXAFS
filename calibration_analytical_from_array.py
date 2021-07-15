@@ -102,9 +102,15 @@ class CalibrateArray:
         result = self.prepare_header(description1, description2)
         print('...saving:', self.filename[:-4])
         plt.figure(7)
-        save_name = os.path.join(self.directory, self.filename[:-4] + ".txt")
+        plt.xlim(520, 570)
+        save_name = os.path.join(self.directory, self.filename[:-4] + "cal" + ".txt")
         #save_pic = os.path.join(self.directory, self.filename[:-4] +"_pxshifted_cal"+ ".png")
         #plt.savefig(save_pic, bbox_inches="tight", dpi=500)
         np.savetxt(save_name, result, delimiter=' ',
                    header='string', comments='',
                    fmt='%s')
+
+
+        plt.close()
+
+
