@@ -86,6 +86,6 @@ class StackMeanValue:
         return self.result
 
     def get_result(self):
+        #loads x axis in col1
         self.result[:, 0] = load_1d_array(self.file_path + '/' + self.file_list[0], self.col_x, self.skip_rows)
-        print(self.result)
         return self.result

@@ -46,11 +46,12 @@ class ImageStackMeanValue:
         self.file_list = file_list
         self.file_path = file_path
         self.result = np.empty([])
+        self.result = convert_32_bit(self.result)
 
     def average_stack(self):
         for x in self.file_list:
             x = str(self.file_path + '/' + x)
-            picture_x = read_32bit_tiff(x)
+            picture_x = read_image(x)
             self.result = self.result + picture_x
 
         self.result = self.result / (len(self.file_list))
@@ -66,7 +67,8 @@ class SingleImageOpen:
 
 
     def return_single_image(self):
-        self.picture_array = read_32bit_tiff(str(self.file_path + '/' + self.file_name))
+        self.picture_array = read_image(str(self.file_path + '/' + self.file_name))
+        print(self.picture_array.dtype, "type of picture array")
         return self.picture_array
 
 

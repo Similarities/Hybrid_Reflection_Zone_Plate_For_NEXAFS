@@ -40,10 +40,10 @@ class CalibrateArray:
         for counter, value in enumerate(self.x_axis_nm):
             # simplified equation
             self.x_axis_nm[counter] = self.calibration_parameter[2] * (
-                        math.cos(self.calibration_parameter[1] * math.pi / 180)
-                        - math.cos(
-                    math.atan(self.x_axis_nm[counter] / self.calibration_parameter[4])
-                    - (self.calibration_parameter[3] * math.pi / 180)))
+                    math.cos(self.calibration_parameter[1] * math.pi / 180)
+                    - math.cos(
+                math.atan(self.x_axis_nm[counter] / self.calibration_parameter[4])
+                - (self.calibration_parameter[3] * math.pi / 180)))
         return self.x_axis_nm
 
     def plot_x_axis_nm(self):
@@ -93,7 +93,7 @@ class CalibrateArray:
         names = (['file' + str(self.filename), str(description1), 'roi list:' + str(description2)])
         print(description1, description1, names)
         parameter_info = (
-            ['description:', "px_shifted, calibration parameter:",str(self.calibration_parameter)])
+            ['description:', "px_shifted, calibration parameter:", str(self.calibration_parameter)])
 
         return np.vstack((parameter_info, names, header_names, result))
 
@@ -104,13 +104,10 @@ class CalibrateArray:
         plt.figure(7)
         plt.xlim(520, 570)
         save_name = os.path.join(self.directory, self.filename[:-4] + "cal" + ".txt")
-        #save_pic = os.path.join(self.directory, self.filename[:-4] +"_pxshifted_cal"+ ".png")
-        #plt.savefig(save_pic, bbox_inches="tight", dpi=500)
+        # save_pic = os.path.join(self.directory, self.filename[:-4] +"_pxshifted_cal"+ ".png")
+        # plt.savefig(save_pic, bbox_inches="tight", dpi=500)
         np.savetxt(save_name, result, delimiter=' ',
                    header='string', comments='',
                    fmt='%s')
 
-
         plt.close()
-
-
