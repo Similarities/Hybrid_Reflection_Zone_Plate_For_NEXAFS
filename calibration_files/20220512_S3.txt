@@ -1,8 +1,12 @@
-1.31e-02
--2.0e+00
-1.38e+03
-3.8e+00
+1.11e-02
+2.1e+00
+1.3e+03
+3.6e+00
 2.3500e+03
-0
+-600
 
 # px size in mm, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
+#px-size Dhyana 11um
+#beta smaller -> expands spectrum
+#alpha bigger: expands and shifts to higher energy
+#offset bigger:

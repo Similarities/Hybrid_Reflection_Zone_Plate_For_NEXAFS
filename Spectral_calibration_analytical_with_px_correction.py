@@ -122,6 +122,7 @@ class PxCorrectionOnStack:
             #plt.close()
         print("xxxxxxxxx - all px shifted xxxxxxxxxxxx")
 
+
     def px_shift(self):
         self.file_list = basic_file_app.get_file_list(self.new_dir)
         print(len(self.file_list), "number of files to be processed")
@@ -132,9 +133,16 @@ class PxCorrectionOnStack:
             ShiftIt = px_shift_on_picture_array.PixelShift(reference, self.reference_points)
             corrected_array = ShiftIt.evaluate_shift_for_input_array(image_array)
             self.overwrite_original(x, corrected_array)
-            plt.close()
+
+
 
     def overwrite_original(self, file_name, array):
+        plt.figure(103)
+        plt.plot(array[:,0], array[:,1])
+        plt.title("px shifted stack")
+        plt.ylabel("counts")
+        plt.xlabel("px")
+        plt.legend()
         print("overwriting original file..: ", file_name)
         save_name = os.path.join(self.new_dir, file_name[:-4] + ".txt")
         np.savetxt(save_name, array, delimiter=' ',
