@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import imageio
-import cv2
+#import imageio
+#import cv2
 
 
 
@@ -68,7 +68,7 @@ class SingleImageOpen:
 
     def return_single_image(self):
         self.picture_array = read_image(str(self.file_path + '/' + self.file_name))
-        print(self.picture_array.dtype, "type of picture array")
+        #print(self.picture_array.dtype, "type of picture array")
         return self.picture_array
 
 

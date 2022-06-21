@@ -35,6 +35,7 @@ class CalibrateArray:
 
     def calibrate_analytical(self):
         # !!! self.x_axis_nm is as input px-x-axis....
+        # returns in nm
         # ToDo: rename input array into px_array
         self.x_axis_nm[:] = self.calibration_parameter[0] * (self.x_axis_nm[:] + self.calibration_parameter[-1])
         for counter, value in enumerate(self.x_axis_nm):

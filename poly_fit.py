@@ -21,7 +21,7 @@ class CalibrationFit:
 
     def fit_reciproce(self):
         self.poly_coefficients =  np.polyfit(self.reference_points[:, 0], self.reference_points[:, 1], self.order)
-        print("reciprocal fit px = 1 eV = 2")
+        print("reciprocal fit px = 1 nm = 2")
         np.savetxt("_poly_fit" + ".txt", self.poly_coefficients, fmt='%.3E', delimiter='\t')
         return self.poly_coefficients
 
@@ -37,7 +37,7 @@ class CalibrationFit:
         plt.figure(55)
         plt.title("fit")
         plt.scatter(self.reference_points[:, 0], self.reference_points[:, 1])
-        plt.ylabel("eV")
+        plt.ylabel("nm")
         plt.xlabel("px")
         plt.plot(x_axis, fit_y)
         plt.legend()
@@ -45,17 +45,29 @@ class CalibrationFit:
 
     def calibrate_input_array(self, array_in, file_array, description):
         array_in[:,0] = self.poly_coefficients[-1] + self.poly_coefficients[1] * array_in[:,0] + self.poly_coefficients[0]* (array_in[:,0] ** 2)
+        array_eV = self.convert_single_value_nm_to_electron_volt(array_in[:,0])
+        array_in = self.stack_column(array_eV, array_in)
         self.save_data(description, file_array, array_in)
+
+    def convert_single_value_nm_to_electron_volt(self, value_nm):
+        planck_constant = 4.135667516 * 1E-15
+        c = 299792458
+        return planck_constant * c / (value_nm * 1E-9)
+
+    def stack_column(self, array_1D, array_2D):
+        return np.column_stack((array_1D, array_2D[:,0], array_2D[:,1]))
+
+
 
 
     def prepare_header(self, description1, file_name, array_converted):
         # insert header line and change index
-        header_names = (['eV', 'counts/s'])
-        names = (['converted file:' + str(file_name[:-4]), str(description1)])
-        print(description1, description1, names)
+        header_names = (['eV', 'nm', 'counts/s'])
+        names = (['converted file:' + str(file_name[:-4]), str(description1), "xxx "])
+        #print(description1, description1, names)
         parameter_info = (
-            ['description:', "px_shifted, calibration parameter: " + str(self.poly_coefficients)])
-
+            ['description:' + description1, "px_shifted, calibration parameter: " + str(self.poly_coefficients), "xxx "])
+        #print(np.ndim(header_names), np.ndim(parameter_info), np.ndim(array_converted))
         return np.vstack((parameter_info, names, header_names, array_converted))
 
     def save_data(self, description1, file_name, array_converted):

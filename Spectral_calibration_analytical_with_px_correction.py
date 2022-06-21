@@ -89,11 +89,12 @@ class ImagePreProcessing:
 
 
 class PxCorrectionOnStack:
-    def __init__(self, path, reference_point_list, new_dir):
+    def __init__(self, path, reference_point_list, new_dir, key_method):
         self.path = path
         self.file_list = basic_image_app.get_file_list(path_picture)
         self.reference_points = reference_point_list
         self.new_dir = new_dir
+        self.key_max_min = key_method
 
 
 
@@ -130,7 +131,7 @@ class PxCorrectionOnStack:
         #print("new file list", self.file_list)
         for x in self.file_list[1:]:
             image_array = basic_file_app.load_2d_array(self.new_dir + '/' +x, 0, 1, 1)
-            ShiftIt = px_shift_on_picture_array.PixelShift(reference, self.reference_points)
+            ShiftIt = px_shift_on_picture_array.PixelShift(reference, self.reference_points, self.key_max_min)
             corrected_array = ShiftIt.evaluate_shift_for_input_array(image_array)
             self.overwrite_original(x, corrected_array)
 
@@ -240,7 +241,7 @@ my_background = batch_background.average_stack()
 # reference positions (px) for minimum in roi for px shift evaluation
 reference_point_list = [1400]
 # path_binned_array_files to be opened for px-shifted arrays (usually excecution path for this python routine)
-Test = PxCorrectionOnStack(path_picture, reference_point_list,bin_path)
+Test = PxCorrectionOnStack(path_picture, reference_point_list,bin_path, "max")
 Test.pre_process_stack()
 Test.px_shift()
 
