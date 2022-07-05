@@ -196,9 +196,9 @@ def create_result_directory(name):
 
 
 # Todo give path name background and image folder
-path_background = "data/20220511/dark_45ms"
+path_background = "data/20220511/dark_135ms"
 name_background = path_background
-path_picture = "data/20220511/R_S2_10ms_Cu"
+path_picture = "data/20220511/R_S2_100ms_W"
 
 # ToDo. set roi range spectrum and roi range background
 # DEFINE ROI for EVAL and BACKGROUND
@@ -217,7 +217,7 @@ create_result_directory(bin_path)
 
 # toDo: give integration time to calculate in counts/s
 # SCALING PARAMETER FOR counts + HEADER DESCRIPTION
-laser_gate_time_data = 10  # ms
+laser_gate_time_data = 100  # ms
 per_second_correction = 1000 / laser_gate_time_data
 rzp_structure_name = "RZP_S2" + str(laser_gate_time_data) + "ms"
 
@@ -230,7 +230,7 @@ my_background = batch_background.average_stack()
 
 # reference positions (px) for minimum in +/- 20px for px shift evaluation
 # note ! that this position is relating to the ROI- of your image
-reference_point_list = [468]
+reference_point_list = [233]
 # path_binned_array_files to be opened for px-shifted arrays (usually excecution path for this python routine)
 #key decides between max and min method for pixel-shift ("max" or "min")
 Test = PxCorrectionOnStack(path_picture, reference_point_list, bin_path, "max")

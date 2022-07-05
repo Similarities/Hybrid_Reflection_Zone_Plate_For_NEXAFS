@@ -116,7 +116,7 @@ class PxCorrectionOnStack:
             PreProcess.bin_in_y()
             PreProcess.scale_array_per_second(per_second_correction)
             # IMPORTANT: reverse array if high energy part is left
-            PreProcess.reverse_array()
+            #PreProcess.reverse_array()
             PreProcess.save_sum_of_y(self.new_dir)
             # plt.close()
         print("xxxxxxxxx - all px shifted xxxxxxxxxxxx")
@@ -215,19 +215,19 @@ def create_result_directory(name):
 
 
 # Todo give path name background and image folder
-path_background = "data/20220511/dark_65ms"
+path_background = "data/20220511/dark_135ms"
 name_background = path_background
-path_picture = "data/20220511/R_S2_Fe_30ms"
+path_picture = "data/20220511/L_W_sandwich_S2_300ms"
 
 # ToDo. set roi range spectrum and roi range background
 # DEFINE ROI for EVAL and BACKGROUND
 # roi on image ( [x1, y1, x2, y2])
-roi_list = ([0, 1040, 2048, 2048])
-back_roi = ([100, 0, 2048, 2000])
+roi_list = ([0, 0, 2048, 996])
+back_roi = ([100, 1000, 1500, 2000])
 
 # ToDo change result folder name
 # RESULT-PATH - important for processing
-bin_path = "results_binned_" + str("20220511_R_S2_30ms_Fe")
+bin_path = "results_binned_" + str("20220511_L_sandwich_S2_300ms")
 create_result_directory(bin_path)
 
 
@@ -238,7 +238,7 @@ create_result_directory(bin_path)
 
 # toDo: give integration time to calculate in counts/s
 # SCALING PARAMETER FOR counts + HEADER DESCRIPTION
-laser_gate_time_data = 30  # ms
+laser_gate_time_data = 300  # ms
 per_second_correction = 1000 / laser_gate_time_data
 rzp_structure_name = "RZP_S2" + str(laser_gate_time_data) + "ms"
 
@@ -251,9 +251,9 @@ my_background = batch_background.average_stack()
 
 # reference positions (px) for minimum in +/- 20px for px shift evaluation
 # note ! that this position is relating to the ROI- of your image
-reference_point = [237]
+reference_point = [1671]
 # path_binned_array_files to be opened for px-shifted arrays (usually excecution path for this python routine)
-Test = PxCorrectionOnStack(path_picture, reference_point, bin_path, "max")
+Test = PxCorrectionOnStack(path_picture, reference_point, bin_path, "min")
 Test.pre_process_stack()
 Test.px_shift()
 
@@ -266,9 +266,11 @@ np.savetxt("avg " + file_path_uncalibrated_stack[0], my_uncalibrated_avg.get_res
 
 # CALIBRATION ON BINNED SPECTRA
 
-calibration_file = "calibration_files/20220511_fit_positions_Fe.txt"
-calibration_xxx = basic_file_app.load_1d_array(calibration_file, 1, 1)
-cal_path = "20220511_Fe_S2_30ms"
+calibration_file = "calibration_files/20220511_sandwich_S2.txt"
+print(calibration_file)
+calibration_xxx = basic_file_app.load_1d_array(calibration_file,1,1)
+print(calibration_xxx, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx the calibra")
+cal_path = "20220511_S2_sandwich_300ms"
 
 create_result_directory(cal_path)
 calibration = BatchCalibration(calibration_file, bin_path + "/", cal_path)
@@ -278,11 +280,11 @@ my_avg = calibration.avg_of_stack()
 
 
 ## ev plot
-mylar_positions = basic_file_app.load_1d_array("calibration_files/Fe_lines_S2.txt", 1, 4)
-my_ev_avg_spectrum = basic_file_app.load_2d_array(cal_path+"/avg/" + cal_path +"_avg.txt", 0,1,4)
+mylar_positions = basic_file_app.load_1d_array("calibration_files/sandwich_sample.txt", 0, 4)
+my_ev_avg_spectrum = basic_file_app.load_2d_array(cal_path+"/avg/" + cal_path +"_avg.txt", 0,2,4)
 
 plt.figure(11)
-plt.plot(my_ev_avg_spectrum[:,0], my_ev_avg_spectrum[:,1], label = "avg")
+plt.plot(my_ev_avg_spectrum[:,0], my_ev_avg_spectrum[:,1], label = "Sandwich S2")
 plt.xlabel("eV")
 plt.ylabel("counts/s")
 plt.title("calibrated spectrum")
@@ -293,13 +295,15 @@ for x in mylar_positions:
     h = 6.62607E-34
     e = 1.60218E-19
     eV_value = h * c / (x * e * 1E-9)
-    plt.figure(10)
-    plt.vlines(x=x, ymin=-1, ymax=3E8, color="m")
+    plt.figure(11)
+    plt.xlabel("eV")
+    plt.ylabel("counts/s")
+    plt.vlines(x=x, ymin=-1, ymax=1.5E7, color="m")
 
 
-#plt.xlim(450, 1100)
+plt.xlim(350,600)
 # plt.ylim(19,21)
 plt.legend()
-save_pic = os.path.join(cal_path, cal_path + "_mean_nm" + ".png")
+save_pic = os.path.join(cal_path, cal_path + "_mean_eV" + ".png")
 plt.savefig(save_pic, bbox_inches="tight", dpi=500)
 plt.show()

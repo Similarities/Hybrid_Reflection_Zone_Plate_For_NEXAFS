@@ -1,0 +1,23 @@
+positions in eV 773.2 1.6 Co (nicht da)
+778.1 1.59 Co (nicht da)
+777.931 1.59 co
+
+
+935.48 1.33 cu
+844.6 1.49 Fe
+719.9 1.72 Fe
+706.8 1.75 Fe
+696 1.78 Cr
+583.00  2.13 Cr
+573.611 2.17 Cr
+560.9 2.21 Ti
+532.9 2.33 Mylar 1s-> pi
+535.4 2.32 Mylar splitting feature
+466.1 2.66 Cu 2.Ordnung
+460.2 2.7 Ti
+402.5 3.08 N
+389 3.18 Co 2. Ordung
+360.4 3.44 Fe 2. Ordnung
+354.2 3.5 Fe 2.Ordnung
+284.2 4.37 C
+

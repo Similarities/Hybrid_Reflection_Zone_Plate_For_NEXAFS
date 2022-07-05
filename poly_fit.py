@@ -7,6 +7,7 @@ class CalibrationFit:
     def __init__(self, reference_points, order, directory):
         self.directory = directory
         self.reference_points = reference_points
+        print(reference_points, 'reference points')
         self.order = order
         # print(reference_points_x_y)
         self.poly_coefficients = self.fit_refernce_points()
