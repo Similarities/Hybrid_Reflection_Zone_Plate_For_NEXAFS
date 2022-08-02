@@ -11,8 +11,10 @@ positions in eV 773.2 1.6 Co (nicht da)
 583.00  2.13 Cr
 573.611 2.17 Cr
 560.9 2.21 Ti
-532.9 2.33 Mylar 1s-> pi
+540 2.3 Mylar first peak
+
 535.4 2.32 Mylar splitting feature
+532.9 2.33 Mylar 1s-> pi
 466.1 2.66 Cu 2.Ordnung
 460.2 2.7 Ti
 402.5 3.08 N

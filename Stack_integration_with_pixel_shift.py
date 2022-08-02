@@ -196,14 +196,14 @@ def create_result_directory(name):
 
 
 # Todo give path name background and image folder
-path_background = "data/20220511/dark_135ms"
+path_background = "data/20220727/RZPL/test_eval/dark"
 name_background = path_background
-path_picture = "data/20220511/R_S2_100ms_W"
+path_picture = "data/20220727/RZPL/test_eval/Ti"
 
 # ToDo. set roi range spectrum and roi range background
 # DEFINE ROI for EVAL and BACKGROUND
 # roi on image ( [x1, y1, x2, y2])
-roi_list = ([0, 1040, 2048, 2048])
+roi_list = ([0, 159, 2048, 768])
 back_roi = ([100, 0, 2048, 2000])
 
 # ToDo change result folder name
@@ -217,7 +217,7 @@ create_result_directory(bin_path)
 
 # toDo: give integration time to calculate in counts/s
 # SCALING PARAMETER FOR counts + HEADER DESCRIPTION
-laser_gate_time_data = 100  # ms
+laser_gate_time_data = 500  # ms
 per_second_correction = 1000 / laser_gate_time_data
 rzp_structure_name = "RZP_S2" + str(laser_gate_time_data) + "ms"
 

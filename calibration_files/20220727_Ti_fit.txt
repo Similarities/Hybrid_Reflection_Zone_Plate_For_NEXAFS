@@ -1,0 +1,10 @@
+positions px and energy in eV (including mylar) and nm1.33
+1758 2.3
+1743 2.32
+1725 2.33
+1209 2.67
+1160 2.71
+660 2.99
+
+
+

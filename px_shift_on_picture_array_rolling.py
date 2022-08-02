@@ -19,7 +19,7 @@ class PixelShift:
         self.position_reference = self.minimum_analysis(self.array_reference)
         return  self.position_reference
 
-    def evaluate_shift_for_input_array(self, picture_array):
+    def evaluate_shift_for_input_array(self, picture_array, figure_number):
         self.array_in = picture_array
         self.test_plot(self.array_in, 1, "original")
         reference_position = self.max_min_decision()
@@ -27,7 +27,7 @@ class PixelShift:
         print(self.shift, '#####shift##########')
         print(reference_position, '#### reference ### ')
         corrected_array = self.correct_for_shift( picture_array)
-        self.test_plot(corrected_array, 2, "px-shifted")
+        self.test_plot(corrected_array, figure_number, "px-shifted")
         return corrected_array
 
     def max_min_decision(self):
@@ -45,25 +45,27 @@ class PixelShift:
         return self.position_reference - minimum_position
 
     def correct_for_shift(self, array):
-        corrected_array = np.zeros([len(self.array_reference), 2])
-        corrected_array[:, 0] = self.array_reference[:, 0]
+        corrected_array = np.zeros([len(self.array_reference), 1])
+        corrected_array = array
+
         if self.shift == 0:
-            corrected_array[:, 1] = array[:, 1]
+            corrected_array = array
 
         elif self.shift < 0 & self.shift > -15:
-            corrected_array[:self.shift,1] = array[-self.shift:,1]
 
+            corrected_array = np.roll(corrected_array, self.shift)
         elif self.shift > 0 & self.shift < 15:
-            corrected_array[self.shift:,1] = array[:-self.shift,1]
+            corrected_array = np.roll(corrected_array, self.shift)
         return corrected_array
 
 
     def minimum_analysis(self, array):
-        left = self.reference_points[0] - 20
-        right = self.reference_points[0] +20
-        sub_array = array[left:right, 1]
+        left = self.reference_points[0] - 15
+        right = self.reference_points[0] +15
+        sub_array = array[left:right]
         minimum = np.amin(sub_array)
-        #print(minimum)
+        #print(minimum, "minimum")
+        #print(sub_array)
         #print([idx for idx, val in enumerate(sub_array) if val == minimum] )
         shift_1 = [idx for idx, val in enumerate(sub_array) if val == minimum][0] + left
         return shift_1
@@ -71,7 +73,7 @@ class PixelShift:
     def maximum_analysis(self, array):
         left = self.reference_points[0] - 20
         right = self.reference_points[0] +20
-        sub_array = array[left:right, 1]
+        sub_array = array[left:right]
         maximum = np.amax(sub_array)
         #print(maximum)
         #print([idx for idx, val in enumerate(sub_array) if val == maximum] )
@@ -81,7 +83,7 @@ class PixelShift:
     def test_plot(self, array, figure_number, name):
         plt.figure(figure_number)
         plt.title(name)
-        plt.plot(array[:, 0], array[:, 1])
+        plt.plot(array)
         plt.xlim(self.reference_points[0] -60, self.reference_points[0] + 60)
 
     def return_shift(self):

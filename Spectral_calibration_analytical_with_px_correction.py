@@ -197,9 +197,9 @@ def create_result_directory(name):
 
 
 #Todo give path name background and image folder
-path_background = "data/NiO_ausfloesung/dark/"
+path_background = "data/20220704/dark/HG_300ms"
 name_background = path_background
-path_picture = "data/test_FE"
+path_picture = "data/20220704/20220702_LS2HG_TiN_300ms389"
 
 
 #ToDo. set roi range spectrum and roi range background
