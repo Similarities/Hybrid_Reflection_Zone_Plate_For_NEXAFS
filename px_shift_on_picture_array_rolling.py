@@ -25,7 +25,7 @@ class PixelShift:
         reference_position = self.max_min_decision()
         self.shift = self.shift_to_reference(reference_position)
         print(self.shift, '#####shift##########')
-        print(reference_position, '#### reference ### ')
+        print(reference_position, '#### Minimum  ### ', "### reference:", self.position_reference)
         corrected_array = self.correct_for_shift( picture_array)
         self.test_plot(corrected_array, figure_number, "px-shifted")
         return corrected_array
@@ -46,16 +46,15 @@ class PixelShift:
 
     def correct_for_shift(self, array):
         corrected_array = np.zeros([len(self.array_reference), 1])
-        corrected_array = array
 
         if self.shift == 0:
             corrected_array = array
 
         elif self.shift < 0 & self.shift > -15:
 
-            corrected_array = np.roll(corrected_array, self.shift)
+            corrected_array = np.roll(array, self.shift)
         elif self.shift > 0 & self.shift < 15:
-            corrected_array = np.roll(corrected_array, self.shift)
+            corrected_array = np.roll(array, self.shift)
         return corrected_array
 
 
@@ -71,8 +70,8 @@ class PixelShift:
         return shift_1
 
     def maximum_analysis(self, array):
-        left = self.reference_points[0] - 20
-        right = self.reference_points[0] +20
+        left = self.reference_points[0] - 15
+        right = self.reference_points[0] +15
         sub_array = array[left:right]
         maximum = np.amax(sub_array)
         #print(maximum)
@@ -84,7 +83,7 @@ class PixelShift:
         plt.figure(figure_number)
         plt.title(name)
         plt.plot(array)
-        plt.xlim(self.reference_points[0] -60, self.reference_points[0] + 60)
+        plt.xlim(self.reference_points[0] -80, self.reference_points[0] + 80)
 
     def return_shift(self):
         return self.shift()

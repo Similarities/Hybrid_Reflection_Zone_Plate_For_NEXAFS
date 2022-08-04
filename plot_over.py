@@ -4,7 +4,7 @@ import numpy as np
 import os
 
 
-pathTi = "data/20220704_RS3_HG175cal/avg/20220704_RS3_HG175cal_avg.txt"
+
 arrayTi = basic_file_app.load_2d_array(pathTi, 0, 2, 5)
 
 pathTiN = "data/20220704_LS2HG_TiN_500ms409/avg/20220704_LS2HG_TiN_500ms409_avg_shorter.txt"
@@ -33,6 +33,6 @@ plt.legend()
 
 
 plt.figure(2)
-save_pic = os.path.join("20220704_Ti_TiN_OD" + ".png")
+save_pic = os.path.join("20220704_Ti_TiN_OD_Nedge" + ".png")
 plt.savefig(save_pic, bbox_inches="tight", dpi=500)
 plt.show()

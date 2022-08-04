@@ -88,14 +88,14 @@ class ImagePreProcessing:
 
 
 class PxCorrectionOnStack:
-    def __init__(self, path, reference_point_list, new_dir, key, figurenumber):
+    def __init__(self, path, file_list, reference_point_list, new_dir, key, figurenumber):
         self.path = path
-        self.file_list = basic_image_app.get_file_list(self.path)
-        print(self.file_list, self.path)
+        self.file_list = file_list
         self.reference_points = reference_point_list
         self.new_dir = new_dir
         self.max_min_key = key
         self.plot_number = figurenumber
+        self.key_back = False
 
     # addon (in pre-processing)
     def threshold_cleaner(self, picture, threshold):
@@ -103,6 +103,11 @@ class PxCorrectionOnStack:
         # plt.imshow(picture)
         # plt.show()
         return picture
+
+    def switch_on_off_back_correction(self, key):
+        if key == True:
+            self.key_back = True
+        return self.key_back
 
     def pre_process_stack(self):
         print("file_list", self.file_list)
@@ -113,7 +118,8 @@ class PxCorrectionOnStack:
             PreProcess = ImagePreProcessing(my_picture, x, my_background, name_background[:-4], roi_list, back_roi)
             # Test.view_control()
             # PreProcess.reference_scaling()
-            PreProcess.background_subtraction()
+            if self.key_back:
+                PreProcess.background_subtraction()
             PreProcess.bin_in_y()
             PreProcess.scale_array_per_second(per_second_correction)
             # IMPORTANT: reverse array if high energy part is left
@@ -180,18 +186,24 @@ def create_result_directory(name):
 
 
 # Todo give path name background and image folder (1)
-path_background = "data/20220727/RZPL/Dunkelbild_500ms"
+path_background = "data/20220803-ZnO_pp/ZnO_I_dunkelbilder"
 name_background = path_background
-path_picture = "data/20220727/RZPL/TiN_First"
+path_picture = "data/20220803-ZnO_pp/ZnO_IV_UP_409"
+all_picture_list= basic_image_app.get_file_list(path_picture)
+first_pictures_list = all_picture_list[:99]
+first_name = "ZnO_IVUP409_first"
+
 
 # Todo give path name background and image folder (2)
 
-path_reference_picture = "data/20220727/RZPL/TiNLast"
+path_reference_picture = path_picture
+last_pictures_list = all_picture_list[100:]
+last_name = "ZnO_IVUP409_last"
 
 # ToDo. set roi range spectrum and roi range background
 # DEFINE ROI for EVAL and BACKGROUND
 # roi on image ( [x1, y1, x2, y2])
-roi_list = ([0, 360, 2048, 480])
+roi_list = ([0, 153, 2048, 582])
 back_roi = ([100, 0, 2048, 2000])
 
 # ToDo change result folder name
@@ -200,6 +212,8 @@ bin_path_image = str(path_picture) + "TESTFIRST"
 create_result_directory(bin_path_image)
 bin_path_reference = str(path_reference_picture) + "TESTLAST"
 create_result_directory(bin_path_reference)
+avg_path = "AVG"+first_name[:-4]
+create_result_directory(avg_path)
 
 # px size in mm, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
 # is now given via read in txt - should look like this:
@@ -207,29 +221,30 @@ create_result_directory(bin_path_reference)
 
 # toDo: give integration time to calculate in counts/s
 # SCALING PARAMETER FOR counts + HEADER DESCRIPTION
-laser_gate_time_data = 500  # ms
+laser_gate_time_data = 350  # ms
 per_second_correction = 1000 / laser_gate_time_data
 rzp_structure_name = "RZP_S2" + str(laser_gate_time_data) + "ms"
 
 # BACKGROUND MEAN FROM IMAGE STACK
-file_list_background = basic_image_app.get_file_list(path_background)
-batch_background = basic_image_app.ImageStackMeanValue(file_list_background, path_background)
-my_background = batch_background.average_stack()
-
+#file_list_background = basic_image_app.get_file_list(path_background)
+#batch_background = basic_image_app.ImageStackMeanValue(file_list_background, path_background)
+#my_background = batch_background.average_stack()
+my_background = np.zeros([1,1])
 # BIN AND PX-SHIFT CORRECTION:
 
 # reference positions (px) for minimum in +/- 20px for px shift evaluation
 # note ! that this position is relating to the ROI- of your image
-reference_point_list = [1725]
+reference_point_list = [156]
 # path_binned_array_files to be opened for px-shifted arrays (usually excecution path for this python routine)
 #key decides between max and min method for pixel-shift ("max" or "min")
 
-Picture = PxCorrectionOnStack(path_picture, reference_point_list, bin_path_image, "min", 2)
+Picture = PxCorrectionOnStack(path_picture, first_pictures_list, reference_point_list, bin_path_image, "min", 2)
+print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", first_pictures_list)
 Picture.pre_process_stack()
 Picture.px_shift()
 
-Reference = PxCorrectionOnStack(path_reference_picture, reference_point_list, bin_path_reference, "min",2)
-print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", path_reference_picture)
+Reference = PxCorrectionOnStack(path_reference_picture, last_pictures_list,reference_point_list, bin_path_reference, "min",2)
+print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", last_pictures_list)
 Reference.pre_process_stack()
 Reference.px_shift()
 
@@ -237,20 +252,22 @@ Reference.px_shift()
 file_path_uncalibrated_stack = basic_file_app.get_file_list(bin_path_image)
 
 my_uncalibrated_avg = basic_file_app.AvgOnColumn(file_path_uncalibrated_stack, bin_path_image, 0, 1)
-np.savetxt("avgTEST " + file_path_uncalibrated_stack[0], my_uncalibrated_avg.get_result(), delimiter=' ',
+np.savetxt(avg_path+ "/avg"+ first_name + ".txt", my_uncalibrated_avg.get_result(), delimiter=' ',
            header='string', comments='',
            fmt='%s')
 image_avg = my_uncalibrated_avg.get_result()
 
 get_reference_list= basic_file_app.get_file_list(bin_path_reference)
 avg_for_reference = basic_file_app.AvgOnColumn(get_reference_list, bin_path_reference, 0, 1)
-np.savetxt("avgTEST" + get_reference_list[0], avg_for_reference.get_result(), delimiter=' ',
+np.savetxt(avg_path +"/avg" + last_name + ".txt" , avg_for_reference.get_result(), delimiter=' ',
            header='string', comments='',
            fmt='%s')
 reference_avg = avg_for_reference.get_result()
 plt.figure(133)
 plt.plot(image_avg)
 plt.plot(reference_avg)
+save_pic = os.path.join(avg_path, "PlotTogether"+first_name+last_name+ ".png")
+plt.savefig(save_pic, bbox_inches="tight", dpi=500)
 
 
 shift_it = PxShiftOnArrays(image_avg, reference_avg, reference_point_list, "min",4)
@@ -261,22 +278,14 @@ my_shifte_reference = shift_it.px_shift_both()
 
 
 
-
-plt.figure(192)
-plt.plot(image_avg, label ="avg_image" )
-plt.plot(my_shifte_reference, label ="avg_reference_")
-plt.xlabel("px")
-plt.ylabel("counts/s")
-plt.legend()
-
 plt.figure(22)
-plt.plot(-np.log((image_avg[:]+2E5)/(my_shifte_reference[:]+2E5)), label = "ODD TiN/TiN")
+plt.plot(-np.log((image_avg[:]+2E5)/(my_shifte_reference[:]+2E5)), label = "ODD" + first_name + last_name)
 plt.xlabel("px")
 plt.ylabel("ODD")
 plt.legend()
 
 
-save_pic = os.path.join("data/20220727", "ODD_TiN_stability_tiny_Roi"+ ".png")
+save_pic = os.path.join(avg_path, "ODD"+first_name+last_name+ ".png")
 plt.savefig(save_pic, bbox_inches="tight", dpi=500)
 plt.show()
 

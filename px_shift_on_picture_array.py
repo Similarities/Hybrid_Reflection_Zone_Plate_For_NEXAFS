@@ -46,7 +46,7 @@ class PixelShift:
 
     def correct_for_shift(self, array):
         corrected_array = np.zeros([len(self.array_reference), 2])
-        corrected_array[:, 0] = self.array_reference[:, 0]
+        #corrected_array[:, 0] = self.array_reference[:, 0] only to have the first place not nan -> should work without it
         if self.shift == 0:
             corrected_array[:, 1] = array[:, 1]
 
