@@ -1,4 +1,4 @@
-# Hybrid Reflection Zone Plate Evaluation
+# Hybrid Reflection Zone Plate Evaluation for Soft-Xray spectroscopy
 ! work in progress not yet finished !
 
 RZP serve as novel high efficient and high resolving spectral dispersive optic for Soft-Xray range, in this case in reflection geometry. 
@@ -31,8 +31,10 @@ This script is work in progress, but covers the whole package for the Nexafs eva
 
 
 
-Single Picture Evaluation:
+Single Picture Evaluation
 - 
+
+Image processing class, wrapped in batch lists (any python file with "Stack..." at beginning)
 - background subtraction, adjusted to a compared roi between background image and measurement image
 - extract roi on image 
 - hot pixel removal (threshold filter on picture)
@@ -40,8 +42,12 @@ Single Picture Evaluation:
 - intensity constant scaling (e.g. to convert measurement time to per second)
 - save function (result array,  plots)
 
-In Stack and Stack to Stack Evaluation :
+In Stack and Stack to Stack Evaluation
 - 
+Any python file with "STack..." in the beginning of the name. You can choose different stack methods, avg on picture folder,
+or two folder, or alternating picture series. The batch script includes the single picture evaluation in the class "Px-shift" -
+and applies px-shift between two stacks (or folders) separately after the stack processing. 
+
 - features: calculates on 64 bit on integrated signals, 32bit on pictures 
 - batch processing single picture evaluation with one or two stacks, or alternating picture series stacks
 - px-shift correction using find minimum in specified range (pointing correction)
@@ -55,7 +61,7 @@ In Stack and Stack to Stack Evaluation :
 - save shift-list for diagnostic purposes
 - x binning option (2px binning so far)
 
-Calibration Evaluation: 
+Calibration Evaluation
 - 
 Two approaches for spectral calibration: 
 
@@ -66,7 +72,7 @@ Two approaches for spectral calibration:
 - save function (result array,  plots)
 - parameter files needed (px-size, fit points in px or parameter of RZP structure and angles for analytical, see below)
 
-Additional Content:
+Additional Content
 - 
 - plot filter data on result image
 - statistics on processed files 
@@ -80,7 +86,7 @@ line consists on too little data points.
 
 
 
-Helping tools for interpreting the quality of the calibration :
+Helping tools for interpreting the quality of the calibration
 -
 If the source stays constant, as the RZP and detector, there should be no change in the parameter if one switches from 
 one structure to another, except for the RZP structure size. Small deviations might reflect deviations in either source, 
@@ -94,7 +100,7 @@ RZP structure size. In order to test this for consistency:
 
 
 
-Packages used: 
+Packages used
 - 
 - numpy
 - matplotlib
@@ -107,7 +113,7 @@ Packages used:
 - imageio
 
 
-To Do - how to use this script:
+To Do - how to use this script
 - 
 for batch purpose with one folder and alternating pictures use: "Stack_integration_avg_alternating.py" or "Stack_integration_with_px_shift_two_arrays_alternating.py"
 
@@ -122,7 +128,7 @@ for batch purpose with two folders: "Stack_integration_with_shift_two_folders.py
 - choose background method
 - choose / enable threshold filter
 - set reference point for px- shift 
-- set method for px-shift (still in the script... )
+- set method for px-shift in the PxShift class argument
 - set / change the range for the px-shift method
 - change the plot titles...
 - check if px-shift correction does what it should - probably check if roi is correct etc.
@@ -130,15 +136,12 @@ for batch purpose with two folders: "Stack_integration_with_shift_two_folders.py
 Script delivers up to your integrated lineouts (in y) with counts to counts/s and px shift correction or not, and avg calculation
 of it. Up to here: not calibration is done.
 
-For calibration choose: "calibration_analytical_from_1Darray.py"
-- give it a calibration file
-- choose your csv or txt file to be opened and calibrated
-- set paraemters for ranges in angle beta (optional)
-- give result folder ...
+For calibration use a different script afterwards - see below.
 
 
-Px Shift Correction via Minimum or Maximum:
+Px Shift Correction via Minimum or Maximum
 - 
+Choose method with "min" / "max" in the arguments for PxShift-class in the stack-script.
 This is a robust method if your signal has a distinct minimum or maximum and sufficient little noise. This method
 searches within a given range around a given reference point the minimum and compares and corrects all pictures on the 
 minimum position of the first picture. Works fast if range is small and signal is not noisy. For noisy signal the method
@@ -146,10 +149,39 @@ fails and typically artifacts, like too deep spiked minimums results in the avg 
 
 Px Shift Correction via FFT:
 - 
+Choose method with "fft" in the arguments for PxShift-class in the stack-script.
 Method works better for noisy signals but only up to limit of above the noise threshold signals. The range for
 this methods should as well be small for noisy signals, otherwise this method can work for longer ranges. 
 upcoming: correlate on the fft correlation - that needs more calculation power but could enhance the results
 
+
+Analytical Spectral Calibration:
+- 
+The main script is named: "calibration_analytical_from_1Darray.py" and might be called from other batch, or cal and 
+plot scripts.
+Parameters for the calibration file (spectral calibration) can be read in via csv or txt file : one column each
+parameter a new line. The order is the following:
+- calibration[0] = px size in mm
+- calibration[1] = alpha angle in
+- calibration[2] = grating constant in mm
+- calibration[3] = beta angle out 
+- calibration[4] = distance RZP to detector in mm
+- calibration[5] = (optional) angle offset in spectral direction on detector in px
+
+Although the equation for calibration depends on both angles: 
+x = px in um
+
+eV(x) = grating constant * (
+                    cos(alpha)
+                    - cos(
+                atan(x / distance RZP detector)
+                - (beta ))
+
+usually the variation of beta is enough to fit for references (which you should have to align calibration).
+If one needs quenching of the spectral range, variation of both angles - or minimal variation of the grating constant
+can be tried. The RZP grating constant is an avg value, as similar to SVLS (Spherical varied line spaced, https://www.hitachi-hightech.com/global/product_detail/?pn=ana-grating#productSub-2 ) gratings the grating line distance varies over the 
+aperture of the optic. 
+The equation is very sensitive to the angle parameters and accurate alignment of up to 0.1% of beta is needed here.
 
 Quasi Benchmarking:
 - 
