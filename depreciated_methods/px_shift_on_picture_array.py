@@ -28,7 +28,7 @@ class PixelShift:
         print(reference_position, '#### reference ### ')
         corrected_array = self.correct_for_shift( picture_array)
         self.test_plot(corrected_array, 2, "px-shifted")
-        return corrected_array
+        return corrected_array, self.shift
 
     def max_min_decision(self):
         if self.max_min_logic == "min":
@@ -59,8 +59,8 @@ class PixelShift:
 
 
     def minimum_analysis(self, array):
-        left = self.reference_points[0] - 20
-        right = self.reference_points[0] +20
+        left = self.reference_points[0] - 15
+        right = self.reference_points[0] +15
         sub_array = array[left:right, 1]
         minimum = np.amin(sub_array)
         #print(minimum)

@@ -2,10 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import basic_image_app
 import basic_file_app
-import math
-import plot_filter
-import px_shift_on_picture_array
-import calibration_analytical_from_array
+from depreciated_methods import calibration_analytical_from_array, px_shift_on_picture_array
 import os
 
 

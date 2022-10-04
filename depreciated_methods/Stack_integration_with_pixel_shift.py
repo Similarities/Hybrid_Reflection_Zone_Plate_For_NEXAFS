@@ -3,8 +3,7 @@ import numpy as np
 import basic_image_app
 import basic_file_app
 import math
-import plot_filter
-import px_shift_on_picture_array
+from depreciated_methods import px_shift_on_picture_array, plot_filter
 import poly_fit
 import os
 

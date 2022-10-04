@@ -3,7 +3,7 @@ import numpy as np
 import basic_image_app
 import basic_file_app
 import math
-import plot_filter
+from depreciated_methods import plot_filter
 import px_shift_on_picture_array_rolling
 import poly_fit
 import os
@@ -21,6 +21,7 @@ class ImagePreProcessing:
         self.back_roi = back_roi
         self.binned_roi_y = np.empty([])
         self.roi_list = roi_list
+        self.extract_roi_picture()
 
     def reference_scaling(self):
         # opens tif is flipped vertical, array_image[y:y1, x:x1] (warum auch immer....)
@@ -34,12 +35,15 @@ class ImagePreProcessing:
         return self.background
 
     def background_subtraction(self):
-        self.picture = basic_image_app.convert_32_bit(
-            self.picture[self.roi_list[1]:self.roi_list[-1], self.roi_list[0]: self.roi_list[2]])
         self.background = (self.background[self.roi_list[1]:self.roi_list[-1], self.roi_list[0]: self.roi_list[2]])
         self.picture[:, :] = self.picture[:, :] - self.background[:, :]
 
         # self.picture[self.picture < 0] = 1
+        return self.picture
+
+    def extract_roi_picture(self):
+        self.picture = basic_image_app.convert_32_bit(
+            self.picture[self.roi_list[1]:self.roi_list[-1], self.roi_list[0]: self.roi_list[2]])
         return self.picture
 
     def bin_in_y(self):
@@ -96,6 +100,8 @@ class PxCorrectionOnStack:
         self.max_min_key = key
         self.plot_number = figurenumber
         self.key_back = False
+        self.threshold_key = True
+        self.shift_stats = []
 
     # addon (in pre-processing)
     def threshold_cleaner(self, picture, threshold):
@@ -114,12 +120,15 @@ class PxCorrectionOnStack:
         for x in self.file_list:
             open_picture = basic_image_app.SingleImageOpen(x, self.path)
             my_picture = open_picture.return_single_image()
+            if self.threshold_key:
+                self.threshold_cleaner(my_picture, 10000)
             # my_picture = self.threshold_cleaner(my_picture, 65000)
             PreProcess = ImagePreProcessing(my_picture, x, my_background, name_background[:-4], roi_list, back_roi)
             # Test.view_control()
             # PreProcess.reference_scaling()
             if self.key_back:
                 PreProcess.background_subtraction()
+
             PreProcess.bin_in_y()
             PreProcess.scale_array_per_second(per_second_correction)
             # IMPORTANT: reverse array if high energy part is left
@@ -138,7 +147,14 @@ class PxCorrectionOnStack:
             image_array = basic_file_app.load_1d_array(self.new_dir + '/' + x, 0, 1)
             ShiftIt = px_shift_on_picture_array_rolling.PixelShift(reference, self.reference_points, self.max_min_key)
             corrected_array = ShiftIt.evaluate_shift_for_input_array(image_array, self.plot_number)
+            #ToDo : repair cannot return int ... self.shift_stats.append(ShiftIt.return_shift())
             self.overwrite_original(x, corrected_array)
+
+    def save_shift_stats(self, name, path):
+        np.savetxt(path + "/" + name, self.shift_stats, delimiter=' ',
+                   header='string', comments='',
+                   fmt='%s')
+
 
     def overwrite_original(self, file_name, array):
         plt.figure(103)
@@ -185,34 +201,39 @@ def create_result_directory(name):
         os.mkdir(name)
 
 
+
+
+
+
 # Todo give path name background and image folder (1)
-path_background = "data/20220803-ZnO_pp/ZnO_I_dunkelbilder"
+path_background = "data/"
 name_background = path_background
-path_picture = "data/20220803-ZnO_pp/ZnO_IV_UP_409"
+path_picture = "data/20220818_ZnO_pp_oc_429_01"
 all_picture_list= basic_image_app.get_file_list(path_picture)
-first_pictures_list = all_picture_list[:99]
-first_name = "ZnO_IVUP409_first"
+
+
+even_pictures_list, odd_picture_list = basic_file_app.even_odd_lists(all_picture_list)
+even_name = "20220818_ZnO_pp_429ShiftEven"
+odd_name = "20220818_ZnO_pp_429ShiftODD"
 
 
 # Todo give path name background and image folder (2)
-
 path_reference_picture = path_picture
-last_pictures_list = all_picture_list[100:]
-last_name = "ZnO_IVUP409_last"
+
 
 # ToDo. set roi range spectrum and roi range background
 # DEFINE ROI for EVAL and BACKGROUND
 # roi on image ( [x1, y1, x2, y2])
-roi_list = ([0, 153, 2048, 582])
+roi_list = ([0, 0, 392, 600])
 back_roi = ([100, 0, 2048, 2000])
 
 # ToDo change result folder name
 # RESULT-PATH - important for processing
-bin_path_image = str(path_picture) + "TESTFIRST"
+bin_path_image = str(path_picture) + "EvenIntegratedThreshold"
 create_result_directory(bin_path_image)
-bin_path_reference = str(path_reference_picture) + "TESTLAST"
+bin_path_reference = str(path_reference_picture) + "OddIntegratedThreshold"
 create_result_directory(bin_path_reference)
-avg_path = "AVG"+first_name[:-4]
+avg_path = "AVG" + even_name[:-4]
 create_result_directory(avg_path)
 
 # px size in mm, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
@@ -221,11 +242,12 @@ create_result_directory(avg_path)
 
 # toDo: give integration time to calculate in counts/s
 # SCALING PARAMETER FOR counts + HEADER DESCRIPTION
-laser_gate_time_data = 350  # ms
+laser_gate_time_data = 10 # ms
 per_second_correction = 1000 / laser_gate_time_data
 rzp_structure_name = "RZP_S2" + str(laser_gate_time_data) + "ms"
 
 # BACKGROUND MEAN FROM IMAGE STACK
+# if both stacks have comparable background - it should not be substracted for the ODD - as this naturally cancels out
 #file_list_background = basic_image_app.get_file_list(path_background)
 #batch_background = basic_image_app.ImageStackMeanValue(file_list_background, path_background)
 #my_background = batch_background.average_stack()
@@ -234,58 +256,63 @@ my_background = np.zeros([1,1])
 
 # reference positions (px) for minimum in +/- 20px for px shift evaluation
 # note ! that this position is relating to the ROI- of your image
-reference_point_list = [156]
+reference_point_list = [152]
 # path_binned_array_files to be opened for px-shifted arrays (usually excecution path for this python routine)
 #key decides between max and min method for pixel-shift ("max" or "min")
+plt.show()
 
-Picture = PxCorrectionOnStack(path_picture, first_pictures_list, reference_point_list, bin_path_image, "min", 2)
-print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", first_pictures_list)
+Picture = PxCorrectionOnStack(path_picture, even_pictures_list, reference_point_list, bin_path_image, "min", 2)
+print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", even_pictures_list)
 Picture.pre_process_stack()
-Picture.px_shift()
 
-Reference = PxCorrectionOnStack(path_reference_picture, last_pictures_list,reference_point_list, bin_path_reference, "min",2)
-print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", last_pictures_list)
+Picture.px_shift()
+Picture.save_shift_stats(even_name + "shift_stats" + ".txt", avg_path)
+
+Reference = PxCorrectionOnStack(path_reference_picture, odd_picture_list, reference_point_list, bin_path_reference, "min", 2)
+print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", odd_picture_list)
 Reference.pre_process_stack()
 Reference.px_shift()
+Reference.save_shift_stats(odd_name + "shift_stats" + ".txt", avg_path)
 
 # SAVE AVG OF STACK UNCALIBRATED (after px-shift)
 file_path_uncalibrated_stack = basic_file_app.get_file_list(bin_path_image)
 
 my_uncalibrated_avg = basic_file_app.AvgOnColumn(file_path_uncalibrated_stack, bin_path_image, 0, 1)
-np.savetxt(avg_path+ "/avg"+ first_name + ".txt", my_uncalibrated_avg.get_result(), delimiter=' ',
+np.savetxt(avg_path + "/avg" + even_name + ".txt", my_uncalibrated_avg.get_result(), delimiter=' ',
            header='string', comments='',
            fmt='%s')
 image_avg = my_uncalibrated_avg.get_result()
 
 get_reference_list= basic_file_app.get_file_list(bin_path_reference)
 avg_for_reference = basic_file_app.AvgOnColumn(get_reference_list, bin_path_reference, 0, 1)
-np.savetxt(avg_path +"/avg" + last_name + ".txt" , avg_for_reference.get_result(), delimiter=' ',
+np.savetxt(avg_path +"/avg" + odd_name + ".txt", avg_for_reference.get_result(), delimiter=' ',
            header='string', comments='',
            fmt='%s')
 reference_avg = avg_for_reference.get_result()
 plt.figure(133)
 plt.plot(image_avg)
 plt.plot(reference_avg)
-save_pic = os.path.join(avg_path, "PlotTogether"+first_name+last_name+ ".png")
+save_pic = os.path.join(avg_path, "PlotTogether" + even_name + odd_name + ".png")
 plt.savefig(save_pic, bbox_inches="tight", dpi=500)
 
 
-shift_it = PxShiftOnArrays(image_avg, reference_avg, reference_point_list, "min",4)
+#shift_it = PxShiftOnArrays(image_avg, reference_avg, reference_point_list, "min",4)
 
 #my_shifte_reference = shift_it.norm_to_maximum_in_range(1725,1740)
-my_shifte_reference = shift_it.px_shift_both()
+#my_shifte_reference = shift_it.px_shift_both()
 #my_shifted_reference = np.roll(my_shifte_reference,-2)
 
 
 
 plt.figure(22)
-plt.plot(-np.log((image_avg[:]+2E5)/(my_shifte_reference[:]+2E5)), label = "ODD" + first_name + last_name)
+plt.plot(-np.log((image_avg[:]+2E5)/(reference_avg[:]+2E5)), label = "ODD" + even_name + odd_name + "noshift")
 plt.xlabel("px")
 plt.ylabel("ODD")
 plt.legend()
+#plt.xlim(10,)
+#plt.ylim(-0.05, 0.05)
 
-
-save_pic = os.path.join(avg_path, "ODD"+first_name+last_name+ ".png")
+save_pic = os.path.join(avg_path, "ODD" + even_name + odd_name + ".png")
 plt.savefig(save_pic, bbox_inches="tight", dpi=500)
 plt.show()
 

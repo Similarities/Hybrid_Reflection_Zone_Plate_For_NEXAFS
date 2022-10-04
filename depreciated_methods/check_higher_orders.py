@@ -1,8 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import basic_file_app
-import plot_filter
-
+from depreciated_methods import plot_filter
 
 
 class ScaleAndOverlaySpectra:

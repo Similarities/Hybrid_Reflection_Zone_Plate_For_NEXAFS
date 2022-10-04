@@ -33,7 +33,7 @@ class BatchFilter:
 
 
 
-path = "filter/sandwich_mix1"
+path = "../filter/sandwich_mix1"
 sandwich30nm = BatchFilter(path)
 sandwich30nm.plot_resulting_transmission()
 plt.show()

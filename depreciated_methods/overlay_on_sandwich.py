@@ -1,7 +1,7 @@
 import basic_file_app
 import numpy as np
 import matplotlib.pyplot as plt
-import sandwich_target
+from depreciated_methods import sandwich_target
 import os
 
 path = "data/sandwich/data_sandwichprobe.txt"

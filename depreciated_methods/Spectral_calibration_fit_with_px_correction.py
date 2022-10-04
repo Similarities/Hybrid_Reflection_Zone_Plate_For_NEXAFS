@@ -3,8 +3,7 @@ import numpy as np
 import basic_image_app
 import basic_file_app
 import math
-import plot_filter
-import px_shift_on_picture_array
+from depreciated_methods import px_shift_on_picture_array, plot_filter
 import poly_fit
 import os
 from ast import literal_eval
@@ -116,7 +115,7 @@ class PxCorrectionOnStack:
             PreProcess.bin_in_y()
             PreProcess.scale_array_per_second(per_second_correction)
             # IMPORTANT: reverse array if high energy part is left
-            #PreProcess.reverse_array()
+            PreProcess.reverse_array()
             PreProcess.save_sum_of_y(self.new_dir)
             # plt.close()
         print("xxxxxxxxx - all px shifted xxxxxxxxxxxx")
@@ -215,9 +214,9 @@ def create_result_directory(name):
 
 
 # Todo give path name background and image folder
-path_background = "data/20220727/RZPL/Dunkelbild_60ms"
+path_background = "data/20220727/RZPL/Dunkelbild_500ms"
 name_background = path_background
-path_picture = "data/20220727/RZPL/W60ms"
+path_picture = "data/20220727/RZPL/Ti"
 
 # ToDo. set roi range spectrum and roi range background
 # DEFINE ROI for EVAL and BACKGROUND
@@ -227,7 +226,7 @@ back_roi = ([100, 1000, 1500, 2000])
 
 # ToDo change result folder name
 # RESULT-PATH - important for processing
-bin_path = "results_binned_" + str("20220727_W60ms")
+bin_path = "results_binned_" + str("20220727_binned")
 create_result_directory(bin_path)
 
 # px size in mm, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
@@ -236,7 +235,7 @@ create_result_directory(bin_path)
 
 # toDo: give integration time to calculate in counts/s
 # SCALING PARAMETER FOR counts + HEADER DESCRIPTION
-laser_gate_time_data = 60 # ms
+laser_gate_time_data = 500  # ms
 per_second_correction = 1000 / laser_gate_time_data
 rzp_structure_name = "L RZP_S2" + str(laser_gate_time_data) + "ms"
 
@@ -269,7 +268,7 @@ calibration_file = "calibration_files/20220727_Ti_fit.txt"
 print(calibration_file)
 calibration_xxx = basic_file_app.load_1d_array(calibration_file, 1, 1)
 print(calibration_xxx, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx the calibration")
-cal_path = "data/20220727/20220727_HG_W_60ms"
+cal_path = "data/20220727/20220727_HG_Ti_500ms"
 
 create_result_directory(cal_path)
 calibration = BatchCalibration(calibration_file, bin_path + "/", cal_path)
@@ -278,7 +277,7 @@ my_avg = calibration.avg_of_stack()
 
 
 ## ev plot
-def plot_v_lines_from_array(array, figurenumber, name, color):
+def plot_v_lines_from_array(array, figurenumber, name):
     for x in array:
         # given in nm and transfered
         c = 3.0E8
@@ -288,18 +287,17 @@ def plot_v_lines_from_array(array, figurenumber, name, color):
         plt.figure(figurenumber)
         plt.xlabel("eV")
         # plt.ylabel("counts/s")
-        plt.vlines(x=x, ymin=1, ymax=4E7, label=name, color = color)
+        plt.vlines(x=x, ymin=1, ymax=5, label=name)
 
 
 Ti = basic_file_app.load_1d_array("calibration_files/Ti_references.txt", 0, 5)
 mylar_positions = basic_file_app.load_1d_array("calibration_files/Mylar_references.txt", 0, 5)
-N_position = basic_file_app.load_1d_array("calibration_files/N_references.txt", 0, 1)
-print(N_position)
+#N_position = basic_file_app.load_1d_array("calibration_files/N_references.txt", 0, 5)
 my_ev_avg_spectrum = basic_file_app.load_2d_array(cal_path + "/avg/" + cal_path + "_avg.txt", 0, 2, 4)
 
-#plot_v_lines_from_array(Ti, 11, "Ti", "b")
-plot_v_lines_from_array(mylar_positions, 11, "mylar", "m")
-plot_v_lines_from_array(N_position, 11, "N", "y")
+plot_v_lines_from_array(Ti, 11, "Ti")
+plot_v_lines_from_array(mylar_positions, 11, "mylar")
+#plot_v_lines_from_array(N_position, 11, "N")
 
 plt.figure(11)
 plt.plot(my_ev_avg_spectrum[:, 0], my_ev_avg_spectrum[:, 1], label="Ti")
@@ -307,7 +305,7 @@ plt.xlabel("eV")
 plt.ylabel("counts/s")
 plt.title("calibrated spectrum")
 
-#plt.xlim(300, 600)
+plt.xlim(300, 600)
 # plt.ylim(19,21)
 plt.legend()
 

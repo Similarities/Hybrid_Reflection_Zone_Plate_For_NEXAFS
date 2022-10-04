@@ -3,7 +3,7 @@ import numpy as np
 import basic_image_app
 import basic_file_app
 import math
-import plot_filter
+from depreciated_methods import plot_filter
 import os
 
 
@@ -152,7 +152,7 @@ path_picture = "data/A9_Lrot56_105ms_Gonio1460/LT18350/"
 # roi on image ( [x1, y1, x2, y2])
 roi_list = ([0, 380, 1730, 1670])
 
-emission_lines = basic_file_app.load_1d_array("calibration_files/Fe_XPL_detected_20210202.txt", 1, 3)
+emission_lines = basic_file_app.load_1d_array("../calibration_files/Fe_XPL_detected_20210202.txt", 1, 3)
 
 # px size in um, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
 rzp_structure_parameter = np.array([1.350e-02,  2.130e+00 , 1.338e+03,  3.714e+00, 2.479e+03, 0.000e+00])
@@ -185,10 +185,10 @@ def batch_folder_in_single_picture():
         # Test.plot_calibration(background[:, 0])
         Test.plot_result_ev()
         Test.plot_calibration_ev(emission_lines[:], my_y_limit, "b")
-        my_filter_1 = plot_filter.PlotFilter("Mylar_900nm.txt", "filter/Mylar_filter", "eV", 7)
+        my_filter_1 = plot_filter.PlotFilter("Mylar_900nm.txt", "../filter/Mylar_filter", "eV", 7)
         my_filter_1.convert_nm_to_electron_volt()
         my_filter_1.plot_filter_data(my_y_limit)
-        my_filter_2 = plot_filter.PlotFilter("Al_0.5um.txt", "filter/Al_0.5_filter", "eV", 7)
+        my_filter_2 = plot_filter.PlotFilter("Al_0.5um.txt", "../filter/Al_0.5_filter", "eV", 7)
         my_filter_2.convert_nm_to_electron_volt()
         my_filter_2.plot_filter_data(my_y_limit)
         plt.xlim(600,1200)
