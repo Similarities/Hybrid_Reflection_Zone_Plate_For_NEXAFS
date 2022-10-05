@@ -1,0 +1,7 @@
+[px] [nm] ! important for accuracy ! do it in nm then transfer to eV
+1085 1.705
+1134 1.677
+642  3.052
+1435 1.501
+
+

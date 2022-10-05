@@ -1,6 +1,8 @@
 strongest only
 
 
+
+
 FeXVII	1.677	1878
 FeXVII	1.705 	1831
 edge	2.28	630
