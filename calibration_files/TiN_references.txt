@@ -1,9 +1,8 @@
 references of TiN J.Phys.Chem. C Vol 11 2007
 main peak: 458 eV (XPS) 2.71 nm
 side peak: 463.7 eV (+5.7eV) 2.67eVnow Nexafs for N same publication:main peaks (lower energy has a splittin)
-403eV 3.08nm (sharper with split)
-415eV 2.99nm (wider)
-
+403 eV 3.08nm (sharper with split)
+415 eV 2.99nm (wider)
 540 2.3
 532.9 2.33
 535.4 2.32

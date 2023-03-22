@@ -43,100 +43,82 @@ class PxShiftOnArrays:
         return self.reference_point
 
 
+def create_result_directory(name):
+    if os.path.isdir(name):
+        pass
+    else:
+        os.mkdir(name)
 
 
 
+path_1 = "Gruppe2 Result_stackAVG_B/Gruppe2 _binned_y.txt"
+cal_directory = "Gruppe2_test"
+create_result_directory(cal_directory)
 
-
-
-path1_1 = "TwoFolder20220926_resultFFTshifted_on_StackBdark/AvgBTiN_50ms_03.txt"
-path_1 = "data/TwoFolder20220926_resultFFTshifted_on_StackBdark/AvgBW_50ms_02.txt"
-
-
-name1 = "TiN on Si "
+name1 = "Gruppe2 Cu "
 array_1 = basic_file_app.load_1d_array(path_1, 0, 1)
-array1_1 = basic_file_app.load_1d_array(path1_1, 0,1)
-shift_it = PxShiftOnArrays(array_1, array1_1, [1647], "min", 4)
-#ToDo: if you want to norm one of the spectras to the other here give a range for max evaluation (choose a peak)
-#my_shifte_reference = shift_it.norm_to_maximum_in_range(1725, 1740)
-array1_1 = shift_it.px_shift_both()
-#array_1 = shift_it.x_binning(array_1)
-#array1_1 = shift_it.x_binning(array1_1)
-shift_it.set_new_arrays(array_1, array1_1)
 
-my_od1 = -np.log((array1_1[:]) / (array_1[:]))
+
+
+my_od1 = array_1
 
 " calibrate first set of data:"
-calibration_file = "calibration_files/20220926_calibration_S2.txt"
+calibration_file = "calibration_files/20230215_calibration_parameter_S4.txt"
+lines = basic_file_app.load_1d_array("calibration_files/Cu_linesXXI.txt", 1, 1)
+lines2 = basic_file_app.load_1d_array("calibration_files/Cu_linesXX.txt", 1, 1)
 
 calibration= basic_file_app.load_all_columns_from_file(calibration_file, 0)
-my_calibration = calibration_analytical_from_1Darray.CalibrateArray(calibration, "data")
-my_calibration.set_input_array(my_od1, "AvgBTiN_50ms.txt", True)
-#my_calibration.main()
-#calibration[3] = calibration[3] -0.005
-#my_calibration.change_calibration_parameter(calibration)
+my_calibration = calibration_analytical_from_1Darray.CalibrateArray(calibration, cal_directory)
+my_calibration.set_input_array(my_od1, "test_spectrum", True)
+my_calibration.main()
+my_calibration.plot_x_axis_nm()
+my_calibration.plot_calibration_nm(lines, "r")
+my_calibration.plot_calibration_nm(lines2, "b")
+
+# px size, alpha , d, beta, distance
+a = 0.00
+calibration[1]=calibration[1]+a
+calibration[3] = calibration[3] +0.1
+calibration[1] = calibration[1]*1.1
+calibration[-1] = 0
+my_calibration.change_calibration_parameter(calibration)
 my_calibratedod1 = my_calibration.main()
+my_calibration.save_data("Gruppe2_test", "see cal paramter here")
+
+
+
+x_px = np.linspace(0,2048, 2048)
+x_eV = np.linspace(0, 2048, 2048)
+def convert_single_value_nm_to_electron_volt( value_nm):
+    planck_constant = 4.135667516 * 1E-15
+    c = 299792458
+    return planck_constant * c / (value_nm * 1E-9)
+
+def poly_fit():
+    for counter, value in enumerate(x_px):
+        x_eV[counter] = -5.63*1E-8 * (value**3)+1.95*1E-4 * (value**2) - (4.62*1E-1)*value +1.4*1E3
+
+    return x_eV
+
+
+reference_cu_xx =basic_file_app.load_1d_array("calibration_files/Cu_linesXX_gruppe1.txt",1,1)
+reference_cu_xx[:] =  convert_single_value_nm_to_electron_volt(reference_cu_xx[:])
+px_reference = basic_file_app.load_1d_array("calibration_files/Cu_linesXX_gruppe1.txt", 2,1)
+px_reference[:] = 2048-px_reference[:]-350
+print(reference_cu_xx, px_reference)
 
 
 
 
 
-path_2 = "data/TwoFolder20220914_resultFFTshifted_on_StackBdark/AvgBW_100ms_02.txt"
-path_2_1 = "data/TwoFolder20220914_resultFFTshifted_on_StackBdark/AvgBTi_100ms_03.txt"
-
-name2 = "Ti on Si"
-array_2 = basic_file_app.load_1d_array(path_2, 0, 1)
-array_2_1 = basic_file_app.load_1d_array(path_2_1, 0, 1)
-shift_it.set_new_arrays(array_2, array_2_1)
-array_2_1 = shift_it.px_shift_both()
-#array_2 = shift_it.x_binning(array_2)
-#array_2_1 = shift_it.x_binning(array_2_1)
-
-shift_it.set_new_arrays(array_2, array_2_1)
-
-my_od2 = -np.log((array_2_1[:]) / (array_2[:]))
+print(len(reference_cu_xx), len(px_reference))
 
 
-calibration_file_2 = "calibration_files/20220914_calibration_S2.txt"
-calibration_2 = basic_file_app.load_1d_array(calibration_file_2, 0,0)
-my_calibration.change_calibration_parameter(calibration_2)
-my_calibration.set_input_array(my_od2, "AvgBTi_100ms", True)
-
-#my_calibratedod2 = my_calibration.main()
-#calibration_2[3] = calibration_2[3] -0.005
-#my_calibration.change_calibration_parameter(calibration_2)
-my_calibratedod2 = my_calibration.main()
-
-'reference_lines on calibration plot of calibration_analytical_from_1Darray.py'
-plt.figure(2)
-plt.axvline(x = 398.4, color = 'b' )
-plt.axvline(x = 401., color = 'b' )
-plt.axvline(x = 409, color = 'b' )
-plt.axvline(x = 452.7, color = 'c' )
-plt.axvline(x = 458.4, color = 'c' )
-plt.axvline(x = 460.1, color = 'c' )
-
-plt.axvline(x = 540, color = 'r' )
-plt.axvline(x = 532.9, color = 'r' )
-plt.axvline(x = 535.4, color = 'r' )
-plt.legend()
-
-
-
-plt.figure(112)
-plt.title("Nexafs Ti and TiN on Si")
-
-plt.plot(my_calibratedod1[:,0], my_calibratedod1[:,1]-0.11, label = name1, alpha = 0.5, marker = ".", markersize = "0.5", color = "m" )
-
-plt.plot(my_calibratedod2[:,0], my_calibratedod2[:,1]-1.165, label = name2, alpha = 0.5, marker = ".", markersize = "0.5", color="b")
-plt.xlabel("energy [eV]")
-plt.ylabel("ODD")
-plt.xlim(375, 519)
-plt.legend()
-
-save_pic = os.path.join("data", "20220914_26_Ti_TiN_nexfas"+ ".png")
-plt.savefig(save_pic, bbox_inches="tight", dpi=500)
-
+plt.figure(10)
+plt.plot(x_px, poly_fit(), label = "calibration Gruppe1")
+plt.scatter(px_reference, reference_cu_xx)
+plt.xlabel("px")
+plt.ylabel("eV")
 plt.legend()
 
 

@@ -1,4 +1,5 @@
-Maylar
+Mylar
+[eV] [nm]
 
 
 

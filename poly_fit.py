@@ -15,15 +15,18 @@ class CalibrationFit:
 
     def fit_refernce_points(self):
         #use reciprocal if column 0 is px and column is eV
-        fit_parameter = np.polyfit(self.reference_points[:, 1], self.reference_points[:, 0], self.order)
-        np.savetxt("_poly_fit" + ".txt", fit_parameter, fmt='%.3E', delimiter='\t')
-        return fit_parameter
+        self.poly_coefficients = np.polyfit(self.reference_points[:, 1], self.reference_points[:, 0], self.order)
+        np.savetxt("_poly_fit" + ".txt", self.poly_coefficients, fmt='%.3E', delimiter='\t')
+
+
+        return self.poly_coefficients
 
 
     def fit_reciproce(self):
         self.poly_coefficients =  np.polyfit(self.reference_points[:, 0], self.reference_points[:, 1], self.order)
         print("reciprocal fit px = 1 nm = 2")
         np.savetxt("_poly_fit" + ".txt", self.poly_coefficients, fmt='%.3E', delimiter='\t')
+
         return self.poly_coefficients
 
     def give_fit(self):
@@ -35,20 +38,21 @@ class CalibrationFit:
         fit_y = np.linspace(np.min(self.reference_points[:, 1]), np.max(self.reference_points[:, 1]), 400)
         for counter, value in enumerate(x_axis):
             fit_y[counter] = self.poly_coefficients[-1] + self.poly_coefficients[1] * x_axis[counter] + self.poly_coefficients[0]* (x_axis[counter] ** 2)
+
         plt.figure(55)
         plt.title("fit")
-        plt.scatter(self.reference_points[:, 0], self.reference_points[:, 1])
+        plt.scatter(self.reference_points[:, 1], self.reference_points[:,0])
         plt.ylabel("nm")
         plt.xlabel("px")
         plt.plot(x_axis, fit_y)
         plt.legend()
         plt.plot()
 
-    def calibrate_input_array(self, array_in, file_array, description):
-        array_in[:,0] = self.poly_coefficients[-1] + self.poly_coefficients[1] * array_in[:,0] + self.poly_coefficients[0]* (array_in[:,0] ** 2)
-        array_eV = self.convert_single_value_nm_to_electron_volt(array_in[:,0])
-        array_in = self.stack_column(array_eV, array_in)
-        self.save_data(description, file_array, array_in)
+    def calibrate_input_array(self, array_in, file_array_y, description, file_name):
+        array_in= self.poly_coefficients[-1] + self.poly_coefficients[1] * array_in + self.poly_coefficients[0]* (array_in ** 2)
+        array_eV = self.convert_single_value_nm_to_electron_volt(array_in)
+        array_in = self.stack_column_single(array_eV, array_in, file_array_y)
+        self.save_data(description, file_name, array_in)
 
     def convert_single_value_nm_to_electron_volt(self, value_nm):
         planck_constant = 4.135667516 * 1E-15
@@ -58,7 +62,8 @@ class CalibrationFit:
     def stack_column(self, array_1D, array_2D):
         return np.column_stack((array_1D, array_2D[:,0], array_2D[:,1]))
 
-
+    def stack_column_single(self, array_eV, array_nm, array_y):
+        return np.column_stack((array_eV, array_nm, array_y))
 
 
     def prepare_header(self, description1, file_name, array_converted):
@@ -75,7 +80,7 @@ class CalibrationFit:
 
         result = self.prepare_header(description1, file_name, array_converted)
         print('...saving:', file_name[:-4])
-        save_name = os.path.join(self.directory, file_name[:-4] + "cal" + ".txt")
+        save_name = os.path.join(self.directory, file_name + ".txt")
         np.savetxt(save_name, result, delimiter=' ',
                    header='string', comments='',
                    fmt='%s')

@@ -3,7 +3,6 @@ import numpy as np
 import basic_image_app
 import basic_file_app
 import math
-from depreciated_methods import plot_filter
 import px_shift_on_picture_array_rolling
 import poly_fit
 import os
@@ -78,7 +77,7 @@ class ImagePreProcessing:
         for counter, value in enumerate(self.binned_roi_y):
             if counter % 2 == 0:
                 binned_spectra[int(round(counter / 2, 0))] = self.binned_roi_y[counter - 1]
-        plt.figure(1111)
+        plt.figure(1109)
         plt.plot(binned_spectra)
         # plt.show()
 
@@ -163,8 +162,9 @@ class PxCorrectionOnStack:
     def pre_process_stack(self):
         # roi_list is a general public variable
         PreProcess = ImagePreProcessing(my_background, name_background[:-4], roi_list, len(self.file_list))
+        tstack = time.time()
         for counter, x in enumerate(self.file_list):
-            tx = time.time()
+            #tx = time.time()
             open_picture = basic_image_app.SingleImageOpen(x, self.path)
             my_picture = open_picture.return_single_image()
             PreProcess.load_new_picture(my_picture, x)
@@ -181,8 +181,9 @@ class PxCorrectionOnStack:
             # IMPORTANT: reverse array if high energy part is left
             # PreProcess.reverse_array()
             PreProcess.append_sum_y(counter)
-            print("calc time per image:", round(time.time() - tx, 2))
-
+            #print("calc time per image:", round(time.time() - tx, 2), "__", counter)
+            print("image number__", counter)
+        print("time elapsed for stack image calculation", (time.time()-tstack)/60, "min")
         self.processed_file = PreProcess.save_result_array(self.new_dir)
 
     def px_shift(self):
@@ -288,12 +289,13 @@ def make_parameter_file():
 
 
 # Todo give path name background and image folder (1)
-path_background = "data/20220926/"
-name_background = "AVG_dark100ms_03"
-path_picture = "data/20220926/TiN100ms_03"
+path_background = "data/20221101/"
+# For acceleration of calculation the avg-background picture should be given NOT a FOLDER
+name_background = "AVG_Stack_dark30000images" # no file ending - wants .tif
+path_picture = "data/20221101/pp_TiN_300s_10ms_8mJ_455delay"
 
-name_picture = "TiN100ms_03_even"
-name_reference = "TiN_100ms_odd"
+name_picture = "TiN10ms_455_even"
+name_reference = name_picture[:-4] +"odd"
 
 all_picture_list = basic_image_app.get_file_list(path_picture)
 
@@ -302,11 +304,11 @@ even_pictures_list, odd_picture_list = basic_file_app.even_odd_lists_string_sort
 # ToDo. set roi range spectrum and roi range background
 # DEFINE ROI for EVAL and BACKGROUND
 # roi on image ( [x1, y1, x2, y2])
-roi_list = ([0, 183, 1806, 322])
+roi_list = ([0, 57, 2000, 188])
 back_roi = ([0, 0, 0, 0])
 
 # ToDo change result folder binned spectra name
-# RESULT-PATH - important for processing
+# RESULT-PATH
 bin_path_image = str(path_picture) + "IntegratedSingleEvenB"
 create_result_directory(bin_path_image)
 bin_path_reference = str(path_picture) + "IntegratedSingleBODD"
@@ -317,22 +319,19 @@ shift_path_reference = bin_path_reference + "FFTShiftedOdd"
 create_result_directory(shift_path_reference)
 
 # ToDo change result avg and od folder
-result_folder = "20220926_Alternating100msResult" + "FFTPxshifted_on_StackB"
+result_folder = name_picture[:-4]+ "FFTPxshifted_on_StackB"
 create_result_directory(result_folder)
 
-# px size in mm, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
-# is now given via read in txt - should look like this:
-# rzp_structure_parameter = np.array([1.350e-02, 2.130e+00, 1.338e+03, 3.714e+00, 2.479e+03, 0.000e+00])
 
 # toDo: give integration time to calculate in counts/s
 # SCALING PARAMETER FOR counts + HEADER DESCRIPTION
-laser_gate_time_data = 100  # ms
+laser_gate_time_data = 10  # ms
 per_second_correction = 1000 / laser_gate_time_data
 rzp_structure_name = "RZP_S2" + str(laser_gate_time_data) + "ms"
 
+
+
 # BACKGROUND MEAN FROM IMAGE STACK, simplified version with threshold cleaner
-
-
 t1 = time.time()
 my_mean_background_picture = basic_image_app.read_image(path_background + name_background + ".tif")
 my_background = basic_image_app.threshold_low_pass_cleaner(my_mean_background_picture, 65000)
@@ -342,17 +341,19 @@ print(t1 - t2, "seconds for background preparation")
 
 # toDo BIN AND PX-SHIFT CORRECTION:
 
-# reference positions (px) for minimum in +/- 20px for px shift evaluation
+# reference positions (px) for minimum for px shift evaluation
 # note ! that this position is relating to the ROI- of your image
-reference_point_list = [1696]
+reference_point_list = [1688]
 # path_binned_array_files to be opened for px-shifted arrays (usually excecution path for this python routine)
-# key decides between max and min method for pixel-shift ("max" or "min")
+# key decides between max and min method for pixel-shift ("max" or "min" or "fft")
+# set_range_px applies the range in px on which the px-shift is evaluated (usually with a wide range it is not accurate
+# if you have a low signal)
 
 Picture = PxCorrectionOnStack(path_picture, even_pictures_list, reference_point_list, bin_path_image, shift_path_image,
                               "fft", 2)
 Picture.switch_on_off_back_correction(True)
 Picture.pre_process_stack()
-Picture.set_range_px_shift(10)
+Picture.set_range_px_shift(7)
 Picture.px_shift()
 Picture.plot_shift_list("image")
 
@@ -360,10 +361,10 @@ shifted_image_stack_file = Picture.return_name_of_shifted_arrays_file()
 
 Reference = PxCorrectionOnStack(path_picture, odd_picture_list, reference_point_list, bin_path_reference,
                                 shift_path_reference,
-                                "fft", 2)
+                                "fft", 11)
 print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", path_picture)
 Reference.switch_on_off_back_correction(True)
-Reference.set_range_px_shift(10)
+Reference.set_range_px_shift(7)
 Reference.pre_process_stack()
 Reference.px_shift()
 Reference.plot_shift_list("reference")
@@ -405,25 +406,25 @@ my_od = np.zeros(len(my_shifte_reference))
 
 my_od = -np.log((image_avg[:]) / (my_shifte_reference[:]))
 plt.figure(23)
-plt.title("ODD shifted stacks (EVEN_ODD)")
+plt.title("transient shifted stacks (EVEN_ODD)")
 plt.plot(my_od, label="shifted to each other nexafs")
 
 plt.xlabel("px")
 plt.ylabel("ODD")
 plt.ylim(-0.05, 0.05)
-plt.xlim(20, 900)
+plt.xlim(20, 1740)
 plt.legend()
 
 save_pic = os.path.join(result_folder, "ODD_image_reference_shifted" + name_picture + name_reference + ".png")
 plt.savefig(save_pic, bbox_inches="tight", dpi=500)
 
 plt.figure(22)
-plt.title("ODD not shifted stacks (EVEN_ODD)")
+plt.title("Transient not shifted stacks (EVEN_ODD)")
 plt.plot(-np.log((image_avg[:]) / (reference_avg[:])), label="ODD" + name_picture + name_reference)
 plt.xlabel("px")
 plt.ylabel("ODD")
 plt.ylim(-0.05, 0.05)
-plt.xlim(20, 900)
+plt.xlim(20, 1740)
 plt.legend()
 
 save_pic = os.path.join(result_folder, "ODD_unshifted" + name_picture + name_reference + ".png")

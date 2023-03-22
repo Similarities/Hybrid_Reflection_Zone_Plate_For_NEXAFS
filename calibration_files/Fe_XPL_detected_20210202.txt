@@ -1,7 +1,5 @@
 Fe lines detected at the XPL laser
 [name] [nm]
-
-
 FeXVII	1.212	1022.97
 FeXVII	1.226	1011.29
 #FeXVIII	1.338	926.6382
