@@ -57,6 +57,22 @@ def get_file_list(path_txt):
             raise e
     return data_files
 
+def get_folder_list(path):
+    files = os.listdir(path)
+    liste_folder = []
+
+    print("in", path, " are following files/folder:")
+    for file in files:
+        print( file)
+        liste_folder.append(file)
+    return liste_folder
+
+
+def filter_list_by_string(list_in, str_in):
+    return list([x for x in list_in if str_in in x])
+
+
+
 def get_bin_files(path):
     data_files = []
     counter = 0
