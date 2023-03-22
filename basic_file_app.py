@@ -57,6 +57,21 @@ def get_file_list(path_txt):
             raise e
     return data_files
 
+def get_bin_files(path):
+    data_files = []
+    counter = 0
+    for file in os.listdir(path):
+        try:
+            if file.endswith(".bin"):
+                data_files.append(str(file))
+                counter = counter + 1
+            else:
+                None
+        except Exception as e:
+            raise e
+    return data_files
+
+
 
 def even_odd_lists(list):
     even_liste = []
@@ -155,8 +170,9 @@ class StackMeanValue:
 
 
         self.result[:, 1] = np.mean(np.float64(self.stack_array), axis = 1)
+        self.get_x_result()
         np.float32(self.result)
-        return self.result
+        return self.result, self.stack_array
 
     def get_x_result(self):
         #loads x axis in col1
@@ -165,3 +181,6 @@ class StackMeanValue:
 
     def return_result(self):
         return self.result
+
+    def return_y_stack(self):
+        return self.stack_array

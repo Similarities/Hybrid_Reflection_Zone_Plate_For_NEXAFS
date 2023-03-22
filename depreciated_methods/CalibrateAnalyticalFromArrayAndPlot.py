@@ -34,7 +34,7 @@ result_folder = "20220823_cal"
 create_result_directory(result_folder)
 
 
-calibration_file = "calibration_files/202209_calibration_S2.txt"
+calibration_file = "../calibration_files/202209_calibration_S2.txt"
 
 calibration= basic_file_app.load_all_columns_from_file(calibration_file, 0)
 my_calibration = calibration_analytical_from_1Darray.CalibrateArray(calibration, result_folder)

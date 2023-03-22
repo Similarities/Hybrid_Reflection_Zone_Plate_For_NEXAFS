@@ -289,22 +289,22 @@ def make_parameter_file():
 
 
 # Todo give path name background and image folder (1)
-path_background = "data/20220914x/"
-name_background = "AVG_dark_100ms"
-path_picture = "data/20220914x/Ti_100msII"
+path_background = "data/20220926/"
+name_background = "AVG_dark50ms_03"
+path_picture = "data/20220926/TiN50ms_03"
 
-reference_path = "data/20220914x/W_100msII"
+reference_path = "data/20220926/W50ms_2"
 
 picture_list = basic_image_app.get_file_list(path_picture)
 reference_list = basic_image_app.get_file_list(reference_path)
 # Todo give path name background and image folder (2)
-name_picture = "Ti_100ms_03"
-name_reference = "W_100ms_02"
+name_picture = "TiN_50ms_03"
+name_reference = "W_50ms_02"
 
 # ToDo. set roi range spectrum and roi range background
 # DEFINE ROI for EVAL and BACKGROUND
 # roi on image ( [x1, y1, x2, y2])
-roi_list = ([0, 213, 1850, 332])
+roi_list = ( [0, 183, 1806, 322])
 back_roi = ([0, 0, 0, 0])
 
 parameter = (roi_list, back_roi, name_reference, name_picture)
@@ -313,7 +313,7 @@ parameter = (roi_list, back_roi, name_reference, name_picture)
 # RESULT-PATH - important for processing
 bin_path_image = str(path_picture) + "IntegratedSingleB"
 create_result_directory(bin_path_image)
-bin_path_reference = str(path_picture) + "IntegratedSingleB"
+bin_path_reference = str(reference_path) + "IntegratedSingleB"
 create_result_directory(bin_path_reference)
 shift_path_image = bin_path_image + "FFTshift"
 create_result_directory(shift_path_image)
@@ -321,7 +321,7 @@ shift_path_reference = bin_path_reference + "FFTshift"
 create_result_directory(shift_path_reference)
 
 # ToDo change result avg and od folder
-result_folder = "TwoFolder20220914" + "_result" + "FFTshifted_on_StackBdark"
+result_folder = "TwoFolder20220926" + "_result" + "FFTshifted_on_StackBdark"
 create_result_directory(result_folder)
 
 # px size in mm, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
@@ -330,7 +330,7 @@ create_result_directory(result_folder)
 
 # toDo: give integration time to calculate in counts/s
 # SCALING PARAMETER FOR counts + HEADER DESCRIPTION
-laser_gate_time_data = 100  # ms
+laser_gate_time_data = 50 # ms
 per_second_correction = 1000 / laser_gate_time_data
 rzp_structure_name = "RZP_S2" + str(laser_gate_time_data) + "ms"
 
@@ -348,7 +348,7 @@ print(t1 - t2, "seconds for background preparation")
 
 # reference positions (px) for minimum in +/- 20px for px shift evaluation
 # note ! that this position is relating to the ROI- of your image
-reference_point_list = [1645]
+reference_point_list = ([1695])
 # path_binned_array_files to be opened for px-shifted arrays (usually excecution path for this python routine)
 # key decides between max and min method for pixel-shift ("max" or "min")
 
@@ -366,7 +366,7 @@ shifted_image_stack_file = Picture.return_name_of_shifted_arrays_file()
 
 plt.show()
 
-reference_point_list = [1645]
+reference_point_list = [1694]
 Reference = PxCorrectionOnStack(reference_path, reference_list, reference_point_list, bin_path_reference,
                                 shift_path_reference,
                                 "fft", 2)
@@ -433,11 +433,16 @@ plt.ylabel("ODD")
 plt.xlim(0, 2000)
 plt.legend()
 
-save_pic = os.path.join(result_folder, "ODD_not_shifted" + name_picture + name_reference + ".png")
+save_pic = os.path.join(result_folder, "OD_not_shifted" + name_picture + name_reference + ".png")
 plt.savefig(save_pic, bbox_inches="tight", dpi=500)
 plt.show()
 
 make_parameter_file()
+
+print(bin_path_image)
+print(bin_path_reference)
+print(shift_path_image)
+print(shift_path_reference)
 
 # ToDo: externalise Image processing
 # ToDo: better logic for switching the method - with automatically changing file-nomination

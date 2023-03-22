@@ -5,8 +5,9 @@ import math
 import os
 
 
-
-
+# px size in mm, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
+# is now given via read in txt - should look like this:
+#rzp_structure_parameter = np.array([1.350e-02, 2.130e+00, 1.338e+03, 3.714e+00, 2.479e+03, 0.000e+00])
 class CalibrateArray:
     # calibration parameter is a list: px size, alpha, dgrating, beta, detector x-offset
     def __init__(self, calibration_parameter, result_directory):
@@ -36,6 +37,7 @@ class CalibrateArray:
     def create_px_x_axis(self, length_array):
         self.x_axis_nm = np.linspace(length_array, 0, length_array)
 
+
     def reverse_array(self):
         self.binned_roi_y =self.binned_roi_y[::-1]
         return self.binned_roi_y
@@ -60,7 +62,7 @@ class CalibrateArray:
 
     def calibrate_analytical(self):
         # !!! self.x_axis_nm is as input px-x-axis....
-        # returns in nm
+        # returns in nm if calibration paramter [0] in mm, R2 in mm, and calibration_parameter[2] is in nm
         self.x_axis_nm[:] = self.calibration_parameter[0] * (self.x_axis_nm[:] + self.calibration_parameter[-1])
         for counter, value in enumerate(self.x_axis_nm):
             # simplified equation
@@ -78,10 +80,10 @@ class CalibrateArray:
         plt.ylabel("counts")
         plt.legend()
 
-    def plot_calibration_nm(self, lines):
+    def plot_calibration_nm(self, lines, color):
         for x in lines:
             plt.figure(6)
-            plt.vlines(x, ymin=0, ymax=1E7)
+            plt.vlines(x, ymin=0, ymax=np.max(self.binned_roi_y), color = color)
 
     def plot_calibration_ev(self, lines, ymax, color):
         for x in lines:

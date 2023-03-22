@@ -42,13 +42,15 @@ class PixelShift:
         right = self.reference_points[0] + range
         sub_array = picture_array[left:right]
         sub_array_reference = self.array_reference[left:right]
-        '#ToDo: implement stackavg for reference (B) here'
         a = fftpack.fft(sub_array)
         b = fftpack.fft(sub_array_reference)
         b = -b.conjugate()
         self.shift = len(sub_array) - np.argmax(np.abs(fftpack.ifft(a * b)))
         if np.argmax(np.abs(fftpack.ifft(a * b))) < range:
             self.shift = -1 * np.argmax(np.abs(fftpack.ifft(a * b)))
+            if self.shift<0:
+                self.shift = self.shift
+
         elif self.shift > range:
             self.shift = 0
         elif self.shift < -range:

@@ -72,11 +72,21 @@ class ImagePreProcessing:
 
     def plot_sum(self):
         plt.figure(111)
-        plt.plot(self.x_axis, self.binned_roi_y, label=self.filename)
+        plt.plot( self.binned_roi_y, label=self.filename)
         plt.ylabel("counts")
         plt.xlabel("px")
         plt.legend()
 
+
+
+"""
+PxShiftOnArrays: 
+with a given reference point it compares to input arrays with each other in respect to 
+to the reference position (or a range < 15px around it). 
+There are two methods available: simple max - or min evaluation when a discrete max or min 
+position is in the array, or via the fft-method - on a wider range (+/-20 px)
+for the sake of agility of the code, the class here is just preparing for the general script
+"""
 
 
 class PxShiftOnArrays:
@@ -114,43 +124,50 @@ def plot_nexafs(array1, array2, name, figure_number):
     # np.savetxt(bin_path_image + "/ODD" + name_picture + name_reference + ".txt", my_od, delimiter=' ',
     #          header='string', comments='')
     plt.figure(figure_number)
+    plt.title("AVG two stacks")
     plt.plot(my_od, label=name)
+    plt.xlim(30,2000)
+    #plt.ylim(0.1,0.3)
     plt.xlabel("px")
     plt.ylabel("Nexafs")
     plt.legend()
-    #plt.ylim(-0.5, 0.5)
     print("max odd:", np.amax(my_od), "min odd:", np.amin(my_od))
 
 
 # Todo give path name background and image folder (1)
-path_background = "data/20221101/"
-name_background = "AVG_Stack_dark30000images"
-path_picture = "data/20221101/pp_TiN_300s_10ms_8mJ_450delay"
+path_background = "data/cu2023/Streubild/Scan_1_1.tif"
+name_background = "AVG_dark"
+path_picture = "data/cu2023"
 
-all_picture_list= basic_image_app.get_file_list(path_picture)
-even_pictures_list, odd_picture_list = basic_file_app.even_odd_lists(all_picture_list)
-print("number Even:", len(even_pictures_list))
-print("number Odd:", len(odd_picture_list))
 
-name_picture = "TiN_450_avg_EVEN"
-name_reference = name_picture[:-4]+"ODD"
+
+
+picture_list= basic_image_app.get_file_list(path_picture)
+
+
+
+#
+name_picture = "Gruppe2 "
+
+
 
 # ToDo. set roi range spectrum and roi range background
 # DEFINE ROI for EVAL and BACKGROUND
 # roi on image ( [x1, y1, x2, y2])
-roi_list = ([0, 57, 2000, 188])
+roi_list = ([0, 0, 2048, 500])
+
 back_roi = ([100, 600, 2048, 2000])
 
 # ToDo change result folder binned spectra name
 # RESULT-PATH - important for processing
-bin_path_image = "data/"+"Result_stackAVGAlternating" + name_picture + name_reference
+bin_path_image =  name_picture +"Result_stackAVG_B"
+
 create_result_directory(bin_path_image)
 
-#bin_path_reference = str(path_reference_picture) + "BackIntegratedStack"
-#create_result_directory(bin_path_reference)
+
 
 # ToDo change result avg and od folder
-result_folder = name_picture[:-4]+"AVGStacksAlternating" + "Result"
+result_folder = "20230215"+"StackAVG" + "Result"
 create_result_directory(result_folder)
 
 # px size in mm, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
@@ -159,34 +176,30 @@ create_result_directory(result_folder)
 
 # toDo: give integration time to calculate in counts/s
 # SCALING PARAMETER FOR counts + HEADER DESCRIPTION
-laser_gate_time_data = 10  # ms
+laser_gate_time_data = 300  # ms
 per_second_correction = 1000 / laser_gate_time_data
-rzp_structure_name = "RZP_S2" + str(laser_gate_time_data) + "ms"
+rzp_structure_name = "RZP_S4" + str(laser_gate_time_data) + "ms"
 
 # BACKGROUND MEAN FROM IMAGE STACK
-
-my_mean_background_picture = basic_image_app.read_image(path_background + name_background + ".tif")
-my_background = np.sum(my_mean_background_picture, axis=0)
+t1 = time.time()
+my_background = basic_image_app.read_image(path_background )
+#my_background = basic_image_app.threshold_low_pass_cleaner(my_mean_background_picture, 3030)
+t2 = time.time()
+print(t1-t2, "seconds for background preparation")
 
 
 # AVG on Stack
-avgEven = basic_image_app.ImageStackMeanValue(odd_picture_list, path_picture)
+avgEven = basic_image_app.ImageStackMeanValue(picture_list, path_picture)
 avg_picture = avgEven.average_stack()
-print(np.max(avg_picture))
+
 avg_sum_even = avgEven.integrate_mean_image()
 print(np.mean(avg_sum_even), "mean of integegrated line out 1")
 backsub1 = avgEven.background_substration(my_background)
 print(np.mean(backsub1))
 
-avgodd = basic_image_app.ImageStackMeanValue(even_pictures_list, path_picture)
-avg_picture2 = avgodd.average_stack()
-print(np.max(avg_picture2))
-avg_sum_even2 = avgodd.integrate_mean_image()
-print(np.max(avg_sum_even2),"mean of integegrated line out 2")
-backsub2 = avgodd.background_substration(my_background)
-print(np.mean(backsub2))
 
-#########
+
+######### Run the script: alter parameter (bool, and reference point for px-shift between both stacks)
 
 
 Integrate = ImagePreProcessing(avg_picture, name_picture, my_background, name_background[:-4], roi_list)
@@ -195,40 +208,17 @@ Integrate.bin_in_y()
 Integrate.scale_array_per_second(per_second_correction)
 Integrate.save_sum_of_y(bin_path_image)
 
-Integrate2 = ImagePreProcessing(avg_picture2, name_reference, my_background, name_background[:-4], roi_list)
-Integrate2.background_subtraction()
-Integrate2.bin_in_y()
-Integrate2.scale_array_per_second(per_second_correction)
-Integrate2.save_sum_of_y(bin_path_image)
-
-plt.figure(111)
-save_pic = os.path.join(result_folder, "PlotTogether" + name_picture+name_reference+ ".png")
-plt.savefig(save_pic, bbox_inches="tight", dpi=500)
-
-
 
 
 
 file_list = basic_file_app.get_file_list(bin_path_image)
-print("binned files", file_list)
 avg_picture_array = basic_file_app.load_1d_array(bin_path_image + "/" + file_list[0], 0,1)
-avg_reference_array = basic_file_app.load_1d_array(bin_path_image +"/"+file_list[1], 0, 1)
 np.savetxt(result_folder + "/AVG" + name_picture + ".txt", avg_picture_array, delimiter=' ',
           header='string', comments='')
-np.savetxt(result_folder + "/AVG" + name_reference + ".txt", avg_reference_array, delimiter=' ',
-          header='string', comments='')
-
-plot_nexafs(avg_picture_array,avg_reference_array, "Nexafs avg not shifted", 104 )
-save_pic = os.path.join(result_folder, "PlotTogether" + name_picture+name_reference+ ".png")
-plt.savefig(save_pic, bbox_inches="tight", dpi=500)
 
 
-shift_it = px_shift_on_picture_array_rolling.PixelShift(avg_picture_array, [100], "min" )
-shifted_odd, shift = shift_it.evaluate_shift_for_input_array(avg_reference_array, 122)
 
-plot_nexafs(avg_picture_array,shifted_odd, "Nexafs avg shifted", 103 )
-save_pic = os.path.join(result_folder, "PlotTogetherShifted" + name_picture+name_reference+ ".png")
-plt.savefig(save_pic, bbox_inches="tight", dpi=500)
+
 
 
 plt.show()

@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
 
+
+
+
 class FWHM:
     def __init__(self, array, file_name, energy_list):
         self.file_name = file_name[:-4]
@@ -13,7 +16,7 @@ class FWHM:
         self.range_for_selection = 0.006
         self.all_results = np.zeros([1, 5])
         self.offset_const = 10000
-        print(self.offset_const, 'base line offset')
+        print(self.offset_const, 'base line offset')D
 
     def plot_fulls_spectra(self):
         plt.figure(3)

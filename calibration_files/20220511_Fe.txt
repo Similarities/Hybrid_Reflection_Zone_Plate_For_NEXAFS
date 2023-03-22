@@ -1,8 +1,8 @@
-1.11e-02
+1.1e-02
 2.0e+00
-1.3e+03
-3.6e+00
-2.0500e+03
+1300e+0
+3.89e+00
+2.0400e+03
 0
 
 # px size in mm, angle alpha degree, d in nm, angle beta in degree, distance RZP - Chip, offset in px
