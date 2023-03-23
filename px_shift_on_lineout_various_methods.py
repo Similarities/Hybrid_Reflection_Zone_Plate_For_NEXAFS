@@ -36,16 +36,19 @@ class PixelShift:
 
     def correlate_signal(self, array_1, array_2):
         corr = signal.correlate(array_1, array_2)
-        plt.figure(1)
-        plt.plot(corr)
-
-        lags = signal.correlation_lags(len(array_1), len(array_2))
-
-        plt.figure(3)
-        plt.plot(lags, corr)
 
         corr /= np.max(corr)
+        plt.figure(2)
+        plt.plot(corr)
         print(corr)
+
+    def richards_correlation(self, array_1, corr_corr):
+        corr_spectrum_start = signal.correlate(array_1, array_1, mode = "same")
+        if corr_corr == True:
+            corr_corr_spectrum_start = signal.correlate(corr_spectrum_start, corr_spectrum_start, mode = "same")
+        else:
+            corr_corr_spectrum_start = -1
+        return corr_spectrum_start, corr_corr_spectrum_start
 
 
     def evaluate_correct_shift_via_fft_for_input_array(self, picture_array, figure_number, range):
@@ -140,5 +143,9 @@ class PixelShift:
     def return_shift(self):
         return self.shift()
 
-array_1 = basic_file_app.load
-Test = PixelShift( array_1, reference_point_list, keyword)
+array_1 = basic_file_app.load_1d_array("data/Result20230309_NiO_II_O_edge_620_1/AVG20230309_NiO_II_O_edge_620_1_even.txt",0,1)
+array_2 = basic_file_app.load_1d_array("data/Result20230309_NiO_II_O_edge_620_1/AVG20230309_NiO_II_O_edge_620_1odd.txt",0,1)
+reference = [1385]
+Test = PixelShift( array_1, reference, "max")
+Test.correlate_signal(array_1, array_2)
+plt.show()
