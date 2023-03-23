@@ -5,6 +5,7 @@ import basic_file_app
 import px_shift_on_picture_array_rolling
 import os
 import time
+import Richards_px_shift
 
 
 # make sure the image-array (picture, background) is in 16bit
@@ -160,7 +161,7 @@ class PxCorrectionOnStack:
         self.key_threshold = False
         self.threshold_limit = 650000
         self.processed_file = str
-        self.px_shift_range = 10
+        self.px_shift_range = 50
         self.result_shifted_spectra = np.zeros([roi_list[2], len(self.file_list)])
         print(len(self.result_shifted_spectra))
         print(np.ndim(self.result_shifted_spectra))
@@ -210,28 +211,23 @@ class PxCorrectionOnStack:
 
     def px_shift(self):
         all_integrated_spectra = basic_file_app.load_all_columns_from_file(self.processed_file, 0)
-        print("xxxxxxxxxxxxx", np.random.randint(low =0, high=len(self.file_list), size=1))
-        reference = all_integrated_spectra[:, np.random.randint(low =1, high=len(self.file_list)-1, size=1)]
+        reference = all_integrated_spectra[:, 0]
         tshift = time.time()
+
+        ShiftIt = Richards_px_shift.PixelShiftByCorrelationAndDeviation(self.px_shift_range, self.reference_points[0],
+                                                                        reference, mode="same",
+                                                                        correlation_method=True,
+                                                                        general_method="deviation")
+
         for x in range(0, len(self.file_list) - 1):
             single_binned_spectra = all_integrated_spectra[:, x]
-            shiftIt = px_shift_on_picture_array_rolling.PixelShift(reference, self.reference_points, self.method)
-            """ Pixel-shift Method: """
-            if self.method == "fft":
-                corrected_array, shift = shiftIt.evaluate_correct_shift_via_fft_for_input_array(single_binned_spectra,
-                                                                                                self.plot_number,
-                                                                                                self.px_shift_range)
-            elif self.method == "max":
-                corrected_array, shift = shiftIt.evaluate_shift_for_input_array(single_binned_spectra, self.plot_number)
 
-            elif self.method == "min":
-                corrected_array, shift = shiftIt.evaluate_shift_for_input_array(single_binned_spectra, self.plot_number)
+            shift = ShiftIt.main(single_binned_spectra)
 
-            else:
-                raise EOFError
 
-            self.shift_list.append(shift)
-            self.append_shifted_array(corrected_array, x)
+            #self.shift_list.append(shift)
+            #self.append_shifted_array(corrected_array, x)
+        self.result_shifted_spectra, self.shift_list = ShiftIt.return_result_spectra()
         print("time elapsed for px-shift on stack:", time.time() - tshift)
         self.save_shift_list()
         self.save_px_shifted_arrays(self.file_list[0])
@@ -249,15 +245,18 @@ class PxCorrectionOnStack:
         return str(self.shift_directory + "/" + "Shifted_spectra" + file_name[:-8] + ".txt")
 
     def save_shift_list(self):
+
         save_shift_name = os.path.join(self.shift_directory, "Shiftlist" + ".txt")
         np.savetxt(save_shift_name, self.shift_list, delimiter=' ',
                    header='string', comments='',
                    fmt='%s')
+        print(save_shift_name, "...saved")
 
     # ToDo: shift array processing saves one array  each line a spectra, not single spectra
     def save_px_shifted_arrays(self, file_name):
         save_name = os.path.join(self.shift_directory, "Shifted_spectra" + file_name[:-8] + ".txt")
         np.savetxt(save_name, self.result_shifted_spectra, delimiter=' ')
+        print(save_name, "...saved")
 
 
 class PxShiftOnArrays:
@@ -407,13 +406,14 @@ class BatchOverFolderListWithAlternatingSequences:
             shifted_even = self.process_image_sequence(self.bin_path_name_even, self.shift_path_name_even, self.list_even, self.name_even)
             avg_even = self.average_over_sequence(shifted_even, self.name_even)
             self.plot_together(avg_even, self.name_even, 13, "PlotTogether")
+            plt.show()
             shifted_odd = self.process_image_sequence(self.bin_path_name_odd, self.shift_path_name_odd, self.list_odd,
                                         self.name_odd)
             avg_odd = self.average_over_sequence(shifted_odd, self.name_odd)
 
             self.plot_together(avg_odd, self.name_odd, 13, "PlotTogether_"+self.name)
 
-            print("min position index in even", np.argmin(avg_even[1000:1800]))
+
             reference = [np.argmin(avg_even[1000:1800])+1000]
             Shift_to_Each_Ohter = PxShiftOnArrays(avg_even, avg_odd, reference, "fft", 111)
             shifted_odd = Shift_to_Each_Ohter.px_shift_both()
@@ -440,12 +440,12 @@ name_background = "AVG_20230309_dunkelbildNiO_O_edge_.tif"
 background = basic_image_app.read_image(path_background)
 
 roi_list = [0,108, 2048, 390]
-reference_point_list = [1386]
+reference_point_list = [1380]
 First_test = BatchOverFolderListWithAlternatingSequences(path_general, folder_list, roi_list, reference_point_list, background)
 First_test.main()
 
 plt.show()
 
 #toDo remove static array size in self.result_shifted_spectra...
-#toDo the fft method over a wider range or a different auto correlation method - is not working properly
+
 

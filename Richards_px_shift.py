@@ -16,9 +16,10 @@ class PixelShiftByCorrelationAndDeviation:
         self.window_size = window_size
         self.start_position = start_position
         self.reference_array = reference_array
-        self.shifted_spectra= self.reference_array
-        self.plot_result(self.reference_array, "ref", 3, "original")
-        self.plot_result(self.reference_array, "ref", 4, "shifted")
+        self.shifted_spectra= []
+        self.shifted_spectra.append(self.reference_array)
+        self.plot_result(self.reference_array, "ref", 33, "original")
+        self.plot_result(self.reference_array, "ref", 43, "shifted")
         self.general_method = general_method #choose "deviation" for correlation or "something" for using the spectrum
         self.mode = mode #"same" - comes from package
         self.correlation_method = correlation_method # True: correlation of correlation, False: correlation only
@@ -27,11 +28,10 @@ class PixelShiftByCorrelationAndDeviation:
         self.shifted_spectrum = []
 
     def main(self, array_in):
-        self.shifted_spectrum = array_in
-        self.plot_result(self.shifted_spectrum, "unshifted", 3, "unshifted")
+        self.plot_result(array_in, "unshifted", 33, "unshifted")
         if self.general_method == "deviation":
             self.reference_array = self.ableitung_central(self.reference_array)
-            array_in = self.ableitung_central(array_in)
+            array_in_corr = self.ableitung_central(array_in)
 
         if self.correlation_method == True:
             max_corr_start = np.argmax(self.reference_corr_of_corr)
@@ -40,28 +40,31 @@ class PixelShiftByCorrelationAndDeviation:
         # of "spectrum_start" with itself, if "corr_corr" = True it is the correlation of
         # the correlation
 
-        spectrum_correlation = self.correlation_spectra(array_in)
+        spectrum_correlation = self.correlation_spectra(array_in_corr)
         # correlation of the spectrum with the start spectrum
         #maximum_corr_spectrum = max_corr_start - (self.start_position)- (np.argmax(spectrum_correlation)) #- self.start_position
         maximum_corr_spectrum =(np.argmax(spectrum_correlation))
         print("shift is:", maximum_corr_spectrum, "max corr start", max_corr_start, "argmax", np.argmax(spectrum_correlation))
-        self.shift_it(maximum_corr_spectrum)
-        self.plot_result(self.shifted_spectrum, "shifted", 4, "shifted")
+        self.shift_it(maximum_corr_spectrum, array_in)
+        return self.shifted_spectrum
+
+
+
+    def shift_it(self, shift, array_in):
+        self.shifted_spectrum = np.roll(array_in, shift)
+        self.shift_list.append(shift)
         self.shifted_spectra.append(self.shifted_spectrum)
 
-    def shift_it(self, shift):
-        self.shifted_spectrum= np.roll(self.shifted_spectrum, shift)
-        self.shift_list.append(shift)
-        return self.shifted_spectrum, self.shift_list
 
     def plot_result(self, array, name, figure_number, title):
         plt.figure(figure_number)
         plt.plot(array, label= name)
         plt.title(title)
-        plt.legend()
+        #plt.legend()
+        plt.xlim(self.start_position-300, self.start_position+300)
 
-    def return_result_spectra(self):
-        return self.shifted_spectra
+    def return_result_shift(self):
+        return self.shift_list
 
     def ableitung_central(self, x):
         '''
@@ -98,7 +101,7 @@ class PixelShiftByCorrelationAndDeviation:
             Correlation of "corr_spectrum_start" with itself
         '''
 
-        corr_spectrum_start = signal.correlate(self.reference_array[self.start_position:self.start_position+window_size], self.reference_array[self.start_position:self.start_position+window_size], mode=self.mode)
+        corr_spectrum_start = signal.correlate(self.reference_array[self.start_position:self.start_position+self.window_size], self.reference_array[self.start_position:self.start_position+self.window_size], mode=self.mode)
 
         if self.correlation_method == True:
             print("here we go for double correlation")
