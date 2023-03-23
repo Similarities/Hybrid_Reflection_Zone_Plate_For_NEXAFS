@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import fftpack
 from scipy import signal
+import basic_file_app
 
 
 # reference point list: method evaluates minimum in +/- range, the px-position (in x) of minimum is needed
@@ -32,6 +33,19 @@ class PixelShift:
         corrected_array = self.correct_for_shift(picture_array)
         self.test_plot(corrected_array, figure_number, "px-shifted")
         return corrected_array, self.shift
+
+    def correlate_signal(self, array_1, array_2):
+        corr = signal.correlate(array_1, array_2)
+        plt.figure(1)
+        plt.plot(corr)
+
+        lags = signal.correlation_lags(len(array_1), len(array_2))
+
+        plt.figure(3)
+        plt.plot(lags, corr)
+
+        corr /= np.max(corr)
+        print(corr)
 
 
     def evaluate_correct_shift_via_fft_for_input_array(self, picture_array, figure_number, range):
@@ -125,3 +139,6 @@ class PixelShift:
 
     def return_shift(self):
         return self.shift()
+
+array_1 = basic_file_app.load
+Test = PixelShift( array_1, reference_point_list, keyword)

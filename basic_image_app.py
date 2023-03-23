@@ -83,6 +83,9 @@ def test_for_doubles_in_list(list1, list2):
 def convert_32_bit(picture):
     return np.float32(picture)
 
+def open_and_sum_image(picture):
+    return np.sum(read_image(picture), axis = 0)
+
 
 class ImageStackMeanValue:
 

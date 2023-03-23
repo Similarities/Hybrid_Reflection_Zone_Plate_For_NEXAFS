@@ -7,23 +7,28 @@ import os
 import time
 
 
-# make sure the image-array (picture, background) is in 32bit
+# make sure the image-array (picture, background) is in 16bit
+'This is the batched batch script'
+'it will process (extract roi, substract background, integrate, pixelshift) images sequences'
+'it will generate from files in one folder 2 sequences by even and odd numbered files'
+'it will create according results folder'
+'it will do this for each folder'
+
+
+
 class ImagePreProcessing:
     # toDo give input pictures instead of calling class to often
-    def __init__(self, background, background_name, roi_lis, number_of_files):
+    def __init__(self, background_picture, background_name, roi_list, number_of_files):
         self.filename = str
         self.picture = np.zeros([])
-        self.background = background
+        self.background = background_picture
         self.background_name = background_name
         self.binned_roi_y = np.zeros([])
         self.roi_list = roi_list
-        self.binned_mean_back = self.prepare_background_binned_and_roi()
+        self.binned_mean_back = self.extract_roi_on_back_array_to_lineout()
         self.x_axis = np.arange(0, self.roi_list[2] - self.roi_list[0]).astype(np.float32)
         self.result_array = np.zeros([len(self.x_axis), number_of_files])
 
-    def prepare_background_binned_and_roi(self):
-        self.background = (self.background[self.roi_list[1]:self.roi_list[-1], self.roi_list[0]: self.roi_list[2]])
-        return np.sum(self.background, axis=0)
 
     # addon (in pre-processing)
     def threshold_cleaner(self, value):
@@ -37,16 +42,22 @@ class ImagePreProcessing:
             self.picture[self.roi_list[1]:self.roi_list[-1], self.roi_list[0]: self.roi_list[2]])
         return self.picture
 
+    def extract_roi_on_back_array_to_lineout(self):
+        self.background = basic_image_app.convert_32_bit(
+            self.background[self.roi_list[1]:self.roi_list[-1], self.roi_list[0]: self.roi_list[2]])
+        self.background = np.sum(self.background, axis  = 0)
+        return self.background
+
+
+
+
+
     def load_new_picture(self, picture, picture_name):
         self.picture = picture
         self.filename = picture_name
         self.extract_roi_picture()
         return self.picture, self.filename
 
-    def background_subtraction_on_image(self):
-        self.picture[:, :] = self.picture[:, :] - self.background[:, :]
-        # self.picture[self.picture < 0] = 1
-        return self.picture
 
     def bin_in_y(self):
         self.binned_roi_y = np.sum(self.picture, axis=0)
@@ -69,6 +80,26 @@ class ImagePreProcessing:
         self.result_array[:, index] = self.binned_roi_y
         # print(self.result_array[:-1])
         return self.result_array
+
+    def check_intensity(self, file_list):
+        cross_sum = []
+        print(self.result_array)
+        cross_sum= np.sum(self.result_array, axis = 0)
+
+
+        print(len(cross_sum), len(self.result_array))
+        maximum = np.max(cross_sum)
+        for counter, value in enumerate(cross_sum):
+            print(value, counter)
+
+            if value < 0.6*maximum:
+
+                self.result_array[:,counter] = self.result_array[:,counter]*0
+                print("set on line to zero", "index of the line is", counter)
+                print(file_list[counter])
+
+
+
 
     def x_binning(self):
         binned_spectra = np.zeros([int(round(len(self.binned_roi_y / 2), 0)) + 1])
@@ -99,14 +130,6 @@ class ImagePreProcessing:
                    header='string', comments='',
                    fmt='%s')
 
-    def view_control(self):
-        plt.figure(1)
-        plt.imshow(self.picture)
-        plt.hlines(self.back_roi[1], xmax=2048, xmin=0)
-        plt.hlines(self.back_roi[-1], xmax=2048, xmin=0)
-        plt.vlines(self.back_roi[0], ymax=2048, ymin=0)
-        plt.vlines(self.back_roi[2], ymax=2048, ymin=0)
-
     def figure_raw(self):
         plt.figure(8)
         plt.imshow(self.picture)
@@ -121,16 +144,18 @@ class ImagePreProcessing:
 
 
 class PxCorrectionOnStack:
-    def __init__(self, path, file_list, reference_point_list, new_dir1, new_dir2, key, figurenumber):
+    def __init__(self, path, file_list, reference_point_list, new_dir1, new_dir2, key, name, background_picture):
         self.path = path
+        self.sequence_name = name
         self.file_list = file_list
         print(self.file_list, self.path)
+        self.background = background_picture
         self.reference_points = reference_point_list
         self.new_dir = new_dir1
         self.shift_directory = new_dir2
         self.shift_list = []
         self.method= key
-        self.plot_number = figurenumber
+        self.plot_number = 2
         self.key_back = False
         self.key_threshold = False
         self.threshold_limit = 650000
@@ -159,34 +184,34 @@ class PxCorrectionOnStack:
 
     def pre_process_stack(self):
         # roi_list is a general public variable
-        PreProcess = ImagePreProcessing(my_background, name_background[:-4], roi_list, len(self.file_list))
+        PreProcess = ImagePreProcessing(self.background, name_background[:-4], roi_list, len(self.file_list))
         tstack = time.time()
         for counter, x in enumerate(self.file_list):
             #tx = time.time()
             open_picture = basic_image_app.SingleImageOpen(x, self.path)
             my_picture = open_picture.return_single_image()
-            PreProcess.load_new_picture(my_picture, x)
+            PreProcess.load_new_picture(my_picture, self.sequence_name)
             # Test.view_control()
             if self.key_threshold:
                 PreProcess.threshold_cleaner(self.threshold_limit)
-
             PreProcess.bin_in_y()
-
             if self.key_back:
                 PreProcess.background_substraction_on_binned_image()
 
-            PreProcess.scale_array_per_second(per_second_correction)
+            #PreProcess.scale_array_per_second(per_second_correction)
             # IMPORTANT: reverse array if high energy part is left
             # PreProcess.reverse_array()
             PreProcess.append_sum_y(counter)
             #print("calc time per image:", round(time.time() - tx, 2), "__", counter)
             print("image number__", counter)
+        PreProcess.check_intensity(self.file_list)
         print("time elapsed for stack image calculation", (time.time()-tstack)/60, "min")
         self.processed_file = PreProcess.save_result_array(self.new_dir)
 
     def px_shift(self):
         all_integrated_spectra = basic_file_app.load_all_columns_from_file(self.processed_file, 0)
-        reference = all_integrated_spectra[:, 0]
+        print("xxxxxxxxxxxxx", np.random.randint(low =0, high=len(self.file_list), size=1))
+        reference = all_integrated_spectra[:, np.random.randint(low =1, high=len(self.file_list)-1, size=1)]
         tshift = time.time()
         for x in range(0, len(self.file_list) - 1):
             single_binned_spectra = all_integrated_spectra[:, x]
@@ -203,7 +228,7 @@ class PxCorrectionOnStack:
                 corrected_array, shift = shiftIt.evaluate_shift_for_input_array(single_binned_spectra, self.plot_number)
 
             else:
-                raise error
+                raise EOFError
 
             self.shift_list.append(shift)
             self.append_shifted_array(corrected_array, x)
@@ -241,21 +266,23 @@ class PxShiftOnArrays:
         self.avg_reference = avg_reference
         self.reference_point = reference_point
         self.method = method
-        self.px_shift_range = 10
+        self.px_shift_range = 40
         self.plot_number = plot_number
 
     def px_shift_both(self):
         evaluate_shift = px_shift_on_picture_array_rolling.PixelShift(self.avg_picture, self.reference_point,
                                                                       self.method)
 
-        if self.method == "min" or method == "max":
+        if self.method == "min" or self.method == "max":
             self.avg_reference, shift = evaluate_shift.evaluate_shift_for_input_array(self.avg_reference, self.plot_number)
+            print(shift, "shift of even to odd")
         elif self.method == "fft":
-            self.avg_reference, shift = shiftIt.evaluate_correct_shift_via_fft_for_input_array(self.avg_reference,
+            self.avg_reference, shift = evaluate_shift.evaluate_correct_shift_via_fft_for_input_array(self.avg_reference,
                                                                                             self.plot_number,
                                                                                             self.px_shift_range)
+            print(shift, "shift of even to odd")
         else:
-            raise error
+            raise EOFError
 
         return self.avg_reference
 
@@ -274,17 +301,131 @@ def create_result_directory(name):
     else:
         os.mkdir(name)
 
-def make_parameter_file():
-    names = ("picture:", name_picture)
-    name2 = ("reference:", name_reference)
+def make_parameter_file(folder_name_to_save, param):
+    names = ("picture:", "str")
+    name2 = ("reference:", "str")
     name3 = ("background:", name_background)
     roi = ("roi:", roi_list)
     pointing = ("pointing ref:", reference_point_list)
     param = np.vstack((names, name2, name3, roi, pointing))
-    np.savetxt(result_folder + "/" + name_picture + "_parameter" + ".txt", param, delimiter=' ',
+    np.savetxt(folder_name_to_save+ "/" + "str" + "_parameter" + ".txt", param, delimiter=' ',
                header='string', comments='',
                fmt='%s')
 
+class BatchOverFolderListWithAlternatingSequences:
+    def __init__(self, path, folder_list, roi_list, reference_points, background_array):
+        self.path = path
+        self.folder_list = folder_list
+        self.roi_list = roi_list
+        self.reference_point = reference_points
+        self.background_array = background_array
+        self.name = folder_list[0]
+        self.result_folder = str
+        self.list_even, self.list_odd = [], []
+        self.name_even = str
+        self.name_odd = str
+        self.bin_path_name_even = str
+        self.shift_path_name_even = str
+        self.bin_path_name_odd = str
+        self.shift_path_name_odd = str
+
+
+
+    def create_result_folders(self):
+        create_result_directory(self.result_folder)
+        create_result_directory(self.bin_path_name_odd)
+        create_result_directory(self.bin_path_name_even)
+        create_result_directory(self.shift_path_name_even)
+        create_result_directory(self.shift_path_name_odd)
+
+
+    def change_folder_name(self):
+        self.bin_path_name_even = "Integrated_Even" + self.name
+        self.shift_path_name_even = "Shifted_Even" + self.name
+        self.bin_path_name_odd = "Integrated_Odd" + self.name
+        self.shift_path_name_odd = "Shifted_Odd" + self.name
+        self.result_folder = "Result" + self.name
+        self.create_result_folders()
+
+
+    def separate_alternating_stack_lists(self):
+        all_picture_list = basic_image_app.get_file_list(self.path + "/" + self.name)
+        self.list_even, self.list_odd = basic_file_app.even_odd_lists_string_sort(all_picture_list)
+        self.name_even = self.name + "_even"
+        self.name_odd = self.name + "odd"
+        return self.list_even, self.list_odd, self.name_even, self.name_odd
+
+
+
+
+
+    def process_image_sequence(self, bin_path, shift_path, file_liste, name):
+        path_even = self.path + '/' + self.name
+        Picture = PxCorrectionOnStack(path_even, file_liste, self.reference_point, bin_path,
+                                      shift_path,
+                                      "min",  name, self.background_array)
+        Picture.switch_on_off_back_correction(True)
+        Picture.pre_process_stack()
+        Picture.set_range_px_shift(7)
+        Picture.px_shift()
+        Picture.plot_shift_list("image")
+
+        shifted_image_stack_file = Picture.return_name_of_shifted_arrays_file()
+        return shifted_image_stack_file
+
+    def average_over_sequence(self, file_name, name):
+        avg_for_reference = basic_file_app.AvgOverAxis1(file_name, 0)
+        reference_avg = avg_for_reference.average_stack()
+        # reference_avg = reference_avg - my_background_lineout[:-4]
+        print(self.result_folder)
+        save_csv = os.path.join(self.result_folder, "AVG" + name + ".txt")
+        np.savetxt(save_csv, reference_avg, delimiter=' ',
+                   header='string', comments='',
+                   fmt='%s')
+        return reference_avg
+
+    def save_shifted_reference(self, file_name, array):
+        save_csv = os.path.join(self.result_folder, "AVG_shifted_reference" + file_name + ".txt")
+        np.savetxt(save_csv, array, delimiter=' ',
+                   header='string', comments='',
+                   fmt='%s')
+
+    def plot_together(self, array, name, figure_number, picture_name):
+        plt.figure(figure_number)
+        plt.plot(array, label = name)
+        plt.title(picture_name)
+        save_pic = os.path.join(self.result_folder, picture_name + name + ".png")
+        plt.savefig(save_pic, bbox_inches="tight", dpi=500)
+
+
+    def main(self):
+        for counter, x in enumerate (self.folder_list):
+            print(x)
+            self.name = folder_list[counter]
+            self.change_folder_name()
+            self.separate_alternating_stack_lists()
+            shifted_even = self.process_image_sequence(self.bin_path_name_even, self.shift_path_name_even, self.list_even, self.name_even)
+            avg_even = self.average_over_sequence(shifted_even, self.name_even)
+            self.plot_together(avg_even, self.name_even, 13, "PlotTogether")
+            shifted_odd = self.process_image_sequence(self.bin_path_name_odd, self.shift_path_name_odd, self.list_odd,
+                                        self.name_odd)
+            avg_odd = self.average_over_sequence(shifted_odd, self.name_odd)
+
+            self.plot_together(avg_odd, self.name_odd, 13, "PlotTogether_"+self.name)
+
+            print("min position index in even", np.argmin(avg_even[1000:1800]))
+            reference = [np.argmin(avg_even[1000:1800])+1000]
+            Shift_to_Each_Ohter = PxShiftOnArrays(avg_even, avg_odd, reference, "fft", 111)
+            shifted_odd = Shift_to_Each_Ohter.px_shift_both()
+            self.save_shifted_reference(self.name_odd, shifted_odd)
+
+            self.plot_together(-np.log(shifted_odd/avg_even), "transient_signal", 22, "Transient_signal " + self.name )
+
+
+
+def scale_integrated_counts(self, laser_integration_time ):
+    per_second_correction = 1000 / laser_integration_time # [ms]
+    #todo needs to be connected to integrated array
 
 #Todo give the main data folder your subfolders are inside
 path_general = "data/20230309"
@@ -292,11 +433,19 @@ folder_list = basic_file_app.get_folder_list(path_general)
 folder_list = basic_file_app.filter_list_by_string(folder_list, "20230309_NiO")
 print(folder_list)
 
-name_picture = "empty"
-name_reference = "emptay"
-create_result_directory("result")
-result_folder = "result"
-name_background = "back"
-reference_point_list = []
-roi_list = []
+'create background array from avg picture '
+path_background = "data/20230309/dark/AVG_20230309_dunkelbildNiO_O_edge_.tif"
+# For acceleration of calculation the avg-background picture should be given NOT a FOLDER
+name_background = "AVG_20230309_dunkelbildNiO_O_edge_.tif"
+background = basic_image_app.read_image(path_background)
+
+roi_list = [0,108, 2048, 390]
+reference_point_list = [1386]
+First_test = BatchOverFolderListWithAlternatingSequences(path_general, folder_list, roi_list, reference_point_list, background)
+First_test.main()
+
+plt.show()
+
+#toDo remove static array size in self.result_shifted_spectra...
+#toDo the fft method over a wider range or a different auto correlation method - is not working properly
 
